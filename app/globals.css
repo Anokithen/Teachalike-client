@@ -298,4 +298,14 @@
     background: linear-gradient(145deg, #54ACBF, #26658C 60%, #023859);
     box-shadow: 12px 12px 24px rgba(2, 56, 89, .22), -8px -8px 20px rgba(255,255,255,.95), inset 2px 2px 5px rgba(255,255,255,.25);
   }
+
+  .mic-orb.is-listening::before, .mic-orb.is-listening::after {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border: 2px solid rgba(84, 172, 191, .55);
+    border-radius: inherit;
+    animation: mic-pulse 1.5s ease-out infinite;
+  }
+  .mic-orb.is-listening::after { animation-delay: .75s; }
 }
