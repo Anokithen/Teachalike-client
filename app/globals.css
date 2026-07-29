@@ -246,4 +246,6 @@
   .dark .vibrant-audio-player::-webkit-media-controls-enclosure { background-color: #102D3F; border-radius: .75rem; }
   .dark .voice-file-picker { background: linear-gradient(90deg, #252542, #3A2947 52%, #493A22) !important; border-color: #554B78 !important; }
   .dark .mic-orb { box-shadow: 12px 12px 24px rgba(1, 12, 21, .38), inset 2px 2px 5px rgba(255,255,255,.12); }
+  .dark .weekly-challenge-card { background: linear-gradient(135deg, #493A22, #1C3443 52%, #123A45) !important; }
+  .dark .weekly-challenge-summary { background: rgba(22, 43, 58, .88) !important; }
 }
