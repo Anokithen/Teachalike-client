@@ -238,4 +238,6 @@
   .dark .brand-logo-mark, .dark .home-logo-frame, .dark .loading-logo-wrap { background: #FFFFFF !important; }
   .dark .home-feature { background: rgba(22, 43, 58, .96); box-shadow: 10px 10px 25px rgba(1, 12, 21, .32), -5px -5px 18px rgba(72, 111, 128, .08); }
   .dark .voice-recorder-panel { background: linear-gradient(135deg, #123A45, #2E2948 52%, #1F2D4A) !important; }
+  .dark .voice-recorder-panel.is-recording { background: linear-gradient(135deg, #432B36, #493A22 52%, #123A45) !important; }
+  .dark .voice-recorder-status, .dark .voice-recording-preview { background: rgba(22, 43, 58, .88) !important; }
 }
