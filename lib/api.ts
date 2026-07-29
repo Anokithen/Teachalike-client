@@ -1,4 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { API_BASE_URL } from '@/lib/config';
 import { ApiErrorShape } from '@/lib/types';
 
 const ACCESS_TOKEN_KEY = 'teachalike_access_token';
@@ -32,7 +33,7 @@ export function clearTokens(): void {
 }
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+  baseURL: API_BASE_URL,
   timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 });
@@ -164,7 +165,7 @@ api.interceptors.response.use(
 
       try {
         const res = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/refresh`,
+          `${API_BASE_URL}/api/auth/refresh`,
           {},
           { headers: { Authorization: `Bearer ${refreshToken}` } }
         );

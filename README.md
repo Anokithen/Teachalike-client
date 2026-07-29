@@ -14,6 +14,25 @@ npm run dev
 Runs at http://localhost:3000. Point `NEXT_PUBLIC_API_URL` at wherever `core` (the
 Flask backend) is running, e.g. `http://localhost:5000`.
 
+## Vercel deployment
+
+Import this repository into Vercel with the project root set to this directory.
+Add the following variable to Production and Preview before deploying:
+
+```env
+NEXT_PUBLIC_API_URL=https://your-backend.up.railway.app
+```
+
+The value must be the public backend origin only: use HTTPS and do not append
+`/api`. Next.js embeds `NEXT_PUBLIC_*` variables into the browser bundle during
+the build, so changing the value requires a new Vercel deployment. Production
+builds intentionally fail when the variable is missing or malformed instead
+of publishing a frontend that calls localhost.
+
+On the backend, set `FRONTEND_ORIGINS` to the production Vercel origin, such as
+`https://your-project.vercel.app`. Add other exact comma-separated origins only
+when browser access from those domains is required.
+
 ## Progressive Web App
 
 The production build is installable as a PWA. It includes:

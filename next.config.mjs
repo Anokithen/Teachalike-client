@@ -1,9 +1,22 @@
+const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+
+if (!configuredApiUrl && process.env.NODE_ENV === 'production') {
+  throw new Error(
+    'NEXT_PUBLIC_API_URL is required for production builds. Set it to the public backend origin.',
+  );
+}
+
 const apiOrigin = (() => {
-  try {
-    return new URL(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').origin;
-  } catch {
-    return 'http://localhost:5000';
+  const parsed = new URL(configuredApiUrl || 'http://localhost:5000');
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    throw new Error('NEXT_PUBLIC_API_URL must use http:// or https://.');
   }
+  if (parsed.pathname !== '/' || parsed.search || parsed.hash) {
+    throw new Error(
+      'NEXT_PUBLIC_API_URL must be an origin without /api, a path, query, or fragment.',
+    );
+  }
+  return parsed.origin;
 })();
 
 const contentSecurityPolicy = [
