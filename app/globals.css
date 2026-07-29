@@ -261,4 +261,6 @@
   .dark .soft-inset { border-color: rgb(var(--color-border) / .9); background: rgb(var(--color-bg) / .82); box-shadow: inset 3px 3px 7px rgba(1,12,21,.22), inset -2px -2px 5px rgba(72,111,128,.10); }
   .dark .page-hero, .dark .leaderboard-hero { border-color: rgb(var(--color-border) / .9); background: linear-gradient(135deg, #123A45, #162B3A 62%, #252542); color: #E6F3F6; }
   .dark .page-hero h1, .dark .page-hero .text-brand-900 { color: #F3FAFC; }
+  .dark .page-hero .text-brand-600 { color: #8EE5F3; }
+  .dark .text-brand-500, .dark .text-brand-700, .dark .text-brand-800 { color: #A8E4EC; }
 }
