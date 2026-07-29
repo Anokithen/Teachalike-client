@@ -278,4 +278,7 @@
   .input::placeholder { opacity: .78; }
   .input:focus { box-shadow: 0 0 0 3px rgb(84 172 191 / .18), inset 2px 2px 5px rgba(2,56,89,.06); }
   .dark select option { background: #162B3A; color: #E6F3F6; }
+  .sidebar-kids nav a:focus-visible, .btn:focus-visible, .input:focus-visible { outline-color: #8EE5F3; }
+
+  .loading-splash { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 2rem; text-align: center; background: radial-gradient(circle at 50% 42%, #26658C 0%, #023859 42%, #01233d 100%); }
 }
