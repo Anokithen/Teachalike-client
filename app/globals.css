@@ -83,4 +83,7 @@
   }
   .soft-card-interactive { transition: transform .2s ease, box-shadow .2s ease; }
   .soft-card-interactive:hover { transform: translateY(-3px); box-shadow: 10px 14px 28px rgba(8,46,114,.11), -7px -8px 20px #fff; }
+  .soft-inset { border: 1px solid #DCEAF3; border-radius: 18px; background: #F2F8FC; box-shadow: inset 3px 3px 8px rgba(8,46,114,.07), inset -3px -3px 8px #fff; }
+  .soft-pill { border-radius: 9999px; }
+  .content-panel { min-height: calc(100dvh - 32px); }
 }
