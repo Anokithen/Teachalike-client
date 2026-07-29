@@ -191,4 +191,9 @@
   header .brand-logo-mark img { width: 35px; height: 35px; }
   .header-brand-reveal { animation: header-brand-enter .35s ease-out both; }
   .header-brand-reveal .brand-logo { border-radius: 1rem; padding: .2rem .55rem .2rem .2rem; background: rgba(255,255,255,.10); box-shadow: 0 0 20px rgba(84,172,191,.18); }
+  .sidebar-kids::before { content: '✦  ●  ✦'; display: block; margin: -2px 0 18px; color: #8EE5F3; letter-spacing: 1rem; font-size: 1rem; animation: twinkle 2.8s ease-in-out infinite; }
+
+  .dark body {
+    background-image: radial-gradient(circle at 8% 4%, rgba(84, 172, 191, .12), transparent 26rem), radial-gradient(circle at 92% 12%, rgba(91, 93, 212, .10), transparent 24rem), radial-gradient(circle at 50% 100%, rgba(224, 164, 56, .07), transparent 30rem);
+  }
 }
