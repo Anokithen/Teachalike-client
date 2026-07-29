@@ -252,4 +252,11 @@
   /* Theme-safe defaults for legacy utility combinations used throughout the app. */
   .text-brand-400 { color: #26658C; }
   .dark .text-brand-400 { color: #8EE5F3; }
+  .dark .soft-card, .dark .content-panel, .dark .card, .dark .neumorphic-card,
+  .dark .app-content-surface {
+    border-color: rgb(var(--color-border) / .9);
+    background: rgb(var(--color-surface) / .96);
+    box-shadow: 10px 10px 24px rgba(1, 12, 21, .28), 0 1px 0 rgb(142 229 243 / .04);
+  }
+  .dark .soft-inset { border-color: rgb(var(--color-border) / .9); background: rgb(var(--color-bg) / .82); box-shadow: inset 3px 3px 7px rgba(1,12,21,.22), inset -2px -2px 5px rgba(72,111,128,.10); }
 }
