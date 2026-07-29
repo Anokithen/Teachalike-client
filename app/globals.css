@@ -214,4 +214,6 @@
   .dark .bg-brand-50 { background-color: #102D3F !important; }
   .dark .bg-brand-100 { background-color: #1A4052 !important; }
   .dark .border-brand-100 { border-color: #2A5364 !important; }
+  .dark .bg-violet-50, .dark .bg-violet-50\/60 { background-color: #252542 !important; }
+  .dark .bg-cyan-50 { background-color: #123A45 !important; }
 }
