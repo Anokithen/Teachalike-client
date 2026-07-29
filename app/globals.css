@@ -228,4 +228,6 @@
   .dark .border-rose-300, .dark .border-rose-400 { border-color: #8D4B58 !important; }
   .dark .text-violet-700, .dark .text-violet-800, .dark .text-violet-900 { color: #C7BFFF !important; }
   .dark .text-cyan-700 { color: #8EE5F3 !important; }
+  .dark .text-amber-700, .dark .text-amber-800 { color: #F7C35D !important; }
+  .dark .text-emerald-800, .dark .text-emerald-900 { color: #8BE0A7 !important; }
 }
