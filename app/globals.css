@@ -174,4 +174,11 @@
     min-height: 42px;
     accent-color: #7C3AED;
   }
+
+  .vibrant-audio-player::-webkit-media-controls-panel {
+    background: linear-gradient(90deg, #E0F7FA, #F3E8FF, #FEF3C7);
+  }
+
+  .app-shell { background: #F2F8FC; gap: 16px; padding: 16px; }
+  .dark .app-shell { background: linear-gradient(135deg, #061D2E 0%, #082A40 30%, #0C1D2B 30%, #0C1D2B 100%); }
 }
