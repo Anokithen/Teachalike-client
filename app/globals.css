@@ -242,4 +242,6 @@
   .dark .voice-recorder-status, .dark .voice-recording-preview { background: rgba(22, 43, 58, .88) !important; }
   .dark .voice-recording-preview, .dark .voice-playback-card { background: linear-gradient(135deg, #102D3F, #202544 56%, #352F25) !important; border-color: rgba(142, 229, 243, .24) !important; box-shadow: inset 0 1px 0 rgba(142, 229, 243, .08), 0 12px 24px rgba(1, 12, 21, .24); }
   .dark .vibrant-audio-player { color-scheme: dark; background: #102D3F; border-radius: .75rem; }
+  .dark .vibrant-audio-player::-webkit-media-controls-panel { background: linear-gradient(90deg, #102D3F, #252442 56%, #3A3020); }
+  .dark .vibrant-audio-player::-webkit-media-controls-enclosure { background-color: #102D3F; border-radius: .75rem; }
 }
