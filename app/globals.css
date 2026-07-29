@@ -285,4 +285,17 @@
   .loading-logo { border-radius: 1.3rem; }
   .rainbow-spinner { width: 168px; height: 168px; margin-top: -152px; border: 5px solid transparent; border-top-color: #8EE5F3; border-right-color: #E0A438; border-bottom-color: #8B5CF6; border-radius: 999px; animation: spinner-orbit 1.2s linear infinite; }
   .loading-stars > * { position: fixed; width: 1.6rem; height: 1.6rem; color: #8EE5F3; animation: twinkle 2.2s ease-in-out infinite; }
+  .loading-stars > *:nth-child(1) { transform: translate(-150px, -110px); } .loading-stars > *:nth-child(2) { transform: translate(140px, -100px); color: #E0A438; } .loading-stars > *:nth-child(3) { transform: translate(-175px, 110px); color: #A78BFA; } .loading-stars > *:nth-child(4) { transform: translate(155px, 125px); color: #F9B4A9; }
+
+  .mic-orb {
+    position: relative;
+    display: grid;
+    width: 112px;
+    height: 112px;
+    place-items: center;
+    border-radius: 999px;
+    color: white;
+    background: linear-gradient(145deg, #54ACBF, #26658C 60%, #023859);
+    box-shadow: 12px 12px 24px rgba(2, 56, 89, .22), -8px -8px 20px rgba(255,255,255,.95), inset 2px 2px 5px rgba(255,255,255,.25);
+  }
 }
