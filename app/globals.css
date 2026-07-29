@@ -265,4 +265,6 @@
   .dark .text-brand-500, .dark .text-brand-700, .dark .text-brand-800 { color: #A8E4EC; }
   .dark .app-content-surface { background: rgb(15 35 49 / .94); }
   .dark .leaderboard-board { background: linear-gradient(180deg, #123A45, #102D3F); }
+  .dark .leaderboard-table-row { border-color: rgb(var(--color-border) / .9); background: #162B3A; }
+  .dark .bg-white\/10 { background-color: rgb(255 255 255 / .12); }
 }
