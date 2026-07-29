@@ -100,4 +100,7 @@
   .icon-bubble { display: grid; place-items: center; border-radius: 999px; background: linear-gradient(135deg, rgba(84,172,191,.2), rgba(118,85,232,.16)); }
   .stat-card { border-radius: 1.35rem; border: 1px solid rgba(211,225,231,.72); background: rgba(248,251,253,.88); box-shadow: 8px 9px 21px rgba(2,56,89,.09), -7px -7px 18px rgba(255,255,255,.86); transition: transform .2s ease, box-shadow .2s ease; }
   .stat-card:hover { transform: translateY(-3px); }
+  .kids-chip { display: inline-flex; align-items: center; border-radius: 999px; padding: .3rem .7rem; font-size: .75rem; font-weight: 700; color: #26658C; background: rgba(84,172,191,.14); }
+  .gradient-title-panel { background: linear-gradient(135deg, rgba(84,172,191,.14), rgba(118,85,232,.12), rgba(246,184,63,.12)); }
+  .auth-page { background-image: radial-gradient(circle at 10% 20%, rgba(84,172,191,.18), transparent 20rem), radial-gradient(circle at 90% 80%, rgba(118,85,232,.13), transparent 22rem); }
 }
