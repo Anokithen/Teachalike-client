@@ -311,4 +311,7 @@
 
   .reading-sparkle { animation: floaty 3.8s ease-in-out infinite; }
   .reading-sparkle:nth-child(2) { animation-delay: -1.3s; }
+  .reading-sparkle:nth-child(3) { animation-delay: -2.1s; }
+
+  .story-gallery-image { animation: gallery-sweep .45s ease-out both; }
 }
