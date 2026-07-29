@@ -167,4 +167,11 @@
   }
 
   .playback-wave span:nth-child(3n + 1) { height: 14px; }
+  .playback-wave span:nth-child(4n + 2) { height: 20px; }
+  .playback-wave span:nth-child(5n) { height: 11px; }
+
+  .vibrant-audio-player {
+    min-height: 42px;
+    accent-color: #7C3AED;
+  }
 }
