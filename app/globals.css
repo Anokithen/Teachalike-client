@@ -154,4 +154,17 @@
     from { height: 8px; opacity: 0.65; }
     to { height: 38px; opacity: 1; }
   }
+
+  .playback-wave {
+    @apply my-3 flex h-5 items-center justify-center gap-0.5 opacity-80;
+  }
+
+  .playback-wave span {
+    width: 5px;
+    height: 7px;
+    border-radius: 999px;
+    background: linear-gradient(to top, #54ACBF, #8B5CF6, #E0A438);
+  }
+
+  .playback-wave span:nth-child(3n + 1) { height: 14px; }
 }
