@@ -226,4 +226,6 @@
   .dark .border-amber-300 { border-color: #8A6A2B !important; }
   .dark .border-emerald-300, .dark .border-emerald-400 { border-color: #3A8560 !important; }
   .dark .border-rose-300, .dark .border-rose-400 { border-color: #8D4B58 !important; }
+  .dark .text-violet-700, .dark .text-violet-800, .dark .text-violet-900 { color: #C7BFFF !important; }
+  .dark .text-cyan-700 { color: #8EE5F3 !important; }
 }
