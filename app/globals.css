@@ -269,4 +269,7 @@
   .dark .bg-white\/10 { background-color: rgb(255 255 255 / .12); }
   .dark .hover\:bg-white:hover { background-color: #244758 !important; }
   .dark .text-blue-100 { color: #D5EEF5; }
+  .dark .text-cyan-100 { color: #C5F1F7; }
+
+  .app-content-surface { background: linear-gradient(145deg, #E8F0F5, #EDF4F8); }
 }
