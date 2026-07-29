@@ -206,4 +206,6 @@
   .dark .text-brand-600 { color: #79C7D8; }
   .dark .text-brand-400 { color: #8EE5F3; }
   .dark .bg-white { background-color: #1C3443 !important; }
+  .dark .bg-white\/70 { background-color: rgb(28 52 67 / .70) !important; }
+  .dark .bg-white\/80 { background-color: rgb(28 52 67 / .80) !important; }
 }
