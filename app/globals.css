@@ -325,4 +325,6 @@
   @keyframes sparkle-drift { 50% { transform: translate(-5px, -9px) rotate(16deg); opacity: .38; } }
   @keyframes bubble-drift { 50% { transform: translate(6px, -12px) scale(1.13); opacity: .52; } }
   @keyframes page-star-float { 50% { transform: translate(-8px, -14px) rotate(15deg); opacity: .18; } }
+  @keyframes page-bubble-float { 50% { transform: translate(7px, -16px) scale(1.18); opacity: .16; } }
+  @keyframes header-brand-enter { from { opacity: 0; transform: translateX(-10px) scale(.95); } to { opacity: 1; transform: translateX(0) scale(1); } }
 }
