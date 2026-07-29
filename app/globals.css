@@ -216,4 +216,6 @@
   .dark .border-brand-100 { border-color: #2A5364 !important; }
   .dark .bg-violet-50, .dark .bg-violet-50\/60 { background-color: #252542 !important; }
   .dark .bg-cyan-50 { background-color: #123A45 !important; }
+  .dark .bg-rose-50 { background-color: #432B36 !important; }
+  .dark .bg-emerald-50, .dark .bg-emerald-50\/60 { background-color: #1E4037 !important; }
 }
