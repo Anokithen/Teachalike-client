@@ -222,4 +222,6 @@
   .dark .bg-amber-100 { background-color: #55431F !important; }
   .dark .bg-emerald-100 { background-color: #24513B !important; }
   .dark .bg-rose-100 { background-color: #542F38 !important; }
+  .dark .border-violet-200, .dark .border-violet-300 { border-color: #554B78 !important; }
+  .dark .border-amber-300 { border-color: #8A6A2B !important; }
 }
