@@ -147,4 +147,11 @@
   }
 
   .recording-wave span:nth-child(3n + 1) { animation-delay: -0.55s; }
+  .recording-wave span:nth-child(3n + 2) { animation-delay: -0.25s; }
+  .recording-wave span:nth-child(4n) { animation-delay: -0.7s; }
+
+  @keyframes recording-wave {
+    from { height: 8px; opacity: 0.65; }
+    to { height: 38px; opacity: 1; }
+  }
 }
