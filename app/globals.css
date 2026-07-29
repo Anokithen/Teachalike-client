@@ -218,4 +218,6 @@
   .dark .bg-cyan-50 { background-color: #123A45 !important; }
   .dark .bg-rose-50 { background-color: #432B36 !important; }
   .dark .bg-emerald-50, .dark .bg-emerald-50\/60 { background-color: #1E4037 !important; }
+  .dark .bg-amber-50 { background-color: #493A22 !important; }
+  .dark .bg-amber-100 { background-color: #55431F !important; }
 }
