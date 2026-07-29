@@ -236,4 +236,6 @@
   .dark .to-cyan-50 { --tw-gradient-to: #123A45 var(--tw-gradient-to-position); }
   .dark .home-logo-frame { background: rgba(248,251,252,.97); }
   .dark .brand-logo-mark, .dark .home-logo-frame, .dark .loading-logo-wrap { background: #FFFFFF !important; }
+  .dark .home-feature { background: rgba(22, 43, 58, .96); box-shadow: 10px 10px 25px rgba(1, 12, 21, .32), -5px -5px 18px rgba(72, 111, 128, .08); }
+  .dark .voice-recorder-panel { background: linear-gradient(135deg, #123A45, #2E2948 52%, #1F2D4A) !important; }
 }
