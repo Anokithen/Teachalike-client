@@ -103,4 +103,16 @@
   .kids-chip { display: inline-flex; align-items: center; border-radius: 999px; padding: .3rem .7rem; font-size: .75rem; font-weight: 700; color: #26658C; background: rgba(84,172,191,.14); }
   .gradient-title-panel { background: linear-gradient(135deg, rgba(84,172,191,.14), rgba(118,85,232,.12), rgba(246,184,63,.12)); }
   .auth-page { background-image: radial-gradient(circle at 10% 20%, rgba(84,172,191,.18), transparent 20rem), radial-gradient(circle at 90% 80%, rgba(118,85,232,.13), transparent 22rem); }
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    box-shadow: 5px 5px 12px rgba(2, 56, 89, .10), -5px -5px 12px rgba(255, 255, 255, .82);
+  }
+  .btn-primary {
+    @apply btn text-white hover:-translate-y-0.5;
+    background: linear-gradient(135deg, #28B6D2, #2589E8);
+    box-shadow: 5px 6px 14px rgba(37,137,232,.24), inset -1px -1px 0 rgba(255,255,255,.15);
+  }
+  .btn-secondary {
+    @apply btn border border-brand-400/60 bg-surface text-brand-600 hover:bg-brand-400 hover:text-white;
+  }
 }
