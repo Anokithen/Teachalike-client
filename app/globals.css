@@ -200,4 +200,6 @@
   .dark .soft-panel { background: linear-gradient(135deg, #123A45, #202544 58%, #2E2948); box-shadow: 10px 10px 24px rgba(1,12,21,.28), -8px -8px 22px rgba(72,111,128,.08); }
   .dark .neumorphic-inset { background: rgba(12,29,43,.72); box-shadow: inset 3px 3px 7px rgba(1,12,21,.22), inset -2px -2px 5px rgba(72,111,128,.10); }
   .dark .input { box-shadow: inset 3px 3px 7px rgba(1, 12, 21, .22), inset -2px -2px 5px rgba(72, 111, 128, .10); }
+  .dark .btn { box-shadow: 0 1px 2px rgba(1, 12, 21, .18); }
+  .dark .btn:hover:not(:disabled) { box-shadow: 0 8px 18px rgba(1, 12, 21, .28), 0 0 0 1px rgba(142, 229, 243, .08); }
 }
