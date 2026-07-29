@@ -208,4 +208,6 @@
   .dark .bg-white { background-color: #1C3443 !important; }
   .dark .bg-white\/70 { background-color: rgb(28 52 67 / .70) !important; }
   .dark .bg-white\/80 { background-color: rgb(28 52 67 / .80) !important; }
+  .dark .bg-white\/85 { background-color: rgb(28 52 67 / .85) !important; }
+  .dark .bg-white\/90 { background-color: rgb(28 52 67 / .90) !important; }
 }
