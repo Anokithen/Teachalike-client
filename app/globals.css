@@ -319,4 +319,6 @@
   @keyframes floaty { 50% { transform: translateY(-7px) rotate(8deg); } }
   @keyframes gallery-sweep { from { opacity: .25; transform: scale(1.04) translateX(12px); } to { opacity: 1; transform: scale(1) translateX(0); } }
   @keyframes spinner-orbit { to { transform: rotate(360deg); } }
+  @keyframes logo-bob { 50% { transform: translateY(-8px) scale(1.03); } }
+  @keyframes twinkle { 50% { opacity: .35; } }
 }
