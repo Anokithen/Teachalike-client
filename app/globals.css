@@ -321,4 +321,6 @@
   @keyframes spinner-orbit { to { transform: rotate(360deg); } }
   @keyframes logo-bob { 50% { transform: translateY(-8px) scale(1.03); } }
   @keyframes twinkle { 50% { opacity: .35; } }
+  @keyframes home-logo-float { 50% { transform: translateY(-12px) rotate(1deg); } }
+  @keyframes sparkle-drift { 50% { transform: translate(-5px, -9px) rotate(16deg); opacity: .38; } }
 }
