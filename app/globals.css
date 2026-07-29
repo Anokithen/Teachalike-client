@@ -204,4 +204,6 @@
   .dark .btn:hover:not(:disabled) { box-shadow: 0 8px 18px rgba(1, 12, 21, .28), 0 0 0 1px rgba(142, 229, 243, .08); }
   .dark .text-brand-900 { color: #E6F3F6; }
   .dark .text-brand-600 { color: #79C7D8; }
+  .dark .text-brand-400 { color: #8EE5F3; }
+  .dark .bg-white { background-color: #1C3443 !important; }
 }
