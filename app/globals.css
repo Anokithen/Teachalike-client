@@ -314,4 +314,7 @@
   .reading-sparkle:nth-child(3) { animation-delay: -2.1s; }
 
   .story-gallery-image { animation: gallery-sweep .45s ease-out both; }
+
+  @keyframes mic-pulse { from { transform: scale(.82); opacity: .9; } to { transform: scale(1.38); opacity: 0; } }
+  @keyframes floaty { 50% { transform: translateY(-7px) rotate(8deg); } }
 }
