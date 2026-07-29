@@ -183,4 +183,6 @@
   .dark .app-shell { background: linear-gradient(135deg, #061D2E 0%, #082A40 30%, #0C1D2B 30%, #0C1D2B 100%); }
   .sidebar-kids { background: linear-gradient(165deg, #064B82, #043B6C 60%, #075B91); border: 1px solid rgba(255,255,255,.12); border-radius: 30px; box-shadow: 8px 12px 24px rgba(8,46,114,.16), inset 1px 1px 0 rgba(255,255,255,.12); }
   .sidebar-kids .text-brand-900 { color: white; }
+  .sidebar-kids .brand-logo { padding: .35rem; border-radius: 1.1rem; background: rgba(255,255,255,.10); }
+  .sidebar-kids .brand-logo-mark { width: 54px; height: 54px; }
 }
