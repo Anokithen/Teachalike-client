@@ -327,4 +327,6 @@
   @keyframes page-star-float { 50% { transform: translate(-8px, -14px) rotate(15deg); opacity: .18; } }
   @keyframes page-bubble-float { 50% { transform: translate(7px, -16px) scale(1.18); opacity: .16; } }
   @keyframes header-brand-enter { from { opacity: 0; transform: translateX(-10px) scale(.95); } to { opacity: 1; transform: translateX(0) scale(1); } }
+  @keyframes fade-slide-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes modal-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 }
