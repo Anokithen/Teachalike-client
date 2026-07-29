@@ -234,4 +234,6 @@
   .dark .from-violet-50 { --tw-gradient-from: #252542 var(--tw-gradient-from-position); --tw-gradient-to: rgb(37 37 66 / 0) var(--tw-gradient-to-position); }
   .dark .via-white { --tw-gradient-to: rgb(22 43 58 / 0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), #162B3A var(--tw-gradient-via-position), var(--tw-gradient-to); }
   .dark .to-cyan-50 { --tw-gradient-to: #123A45 var(--tw-gradient-to-position); }
+  .dark .home-logo-frame { background: rgba(248,251,252,.97); }
+  .dark .brand-logo-mark, .dark .home-logo-frame, .dark .loading-logo-wrap { background: #FFFFFF !important; }
 }
