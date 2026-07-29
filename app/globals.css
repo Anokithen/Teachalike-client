@@ -404,3 +404,18 @@
   }
 }
 
+@layer components {
+  .sidebar-kids nav a { min-height: 48px; }
+  .sidebar-kids nav a:not(.bg-white) { color: #DDF5FF; }
+  .sidebar-kids nav a:not(.bg-white):hover { background: rgba(255,255,255,.12); }
+  .sidebar-kids nav a.sidebar-nav-active { position: relative; background: #FFFFFF; color: #023859; box-shadow: 0 8px 18px rgba(1, 24, 48, .22); }
+  .sidebar-kids nav a.sidebar-nav-active::after { content: ''; position: absolute; right: .7rem; top: 50%; width: .25rem; height: 1.75rem; border-radius: 999px; background: #54ACBF; transform: translateY(-50%); }
+  .sidebar-kids nav a.sidebar-nav-active:hover { background: #FFFFFF; color: #023859; }
+  .sidebar-kids::-webkit-scrollbar, .sidebar-kids nav::-webkit-scrollbar { width: .35rem; }
+  .sidebar-kids::-webkit-scrollbar-thumb, .sidebar-kids nav::-webkit-scrollbar-thumb { border-radius: 999px; background: rgba(255,255,255,.24); }
+  .sidebar-kids::-webkit-scrollbar-track, .sidebar-kids nav::-webkit-scrollbar-track { background: transparent; }
+  .app-content-surface { border-radius: 30px; background: linear-gradient(145deg, #E8F0F5, #EDF4F8); box-shadow: 8px 10px 28px rgba(8,46,114,.07); }
+  .leaderboard-hero { background: linear-gradient(135deg, #DFF7FC 0%, #fff 58%, #F1EDFF 100%); }
+  .leaderboard-board { background: linear-gradient(180deg, #EAF9FC, #F8FCFE); }
+  .leaderboard-table-row { border: 1px solid #DCEAF3; border-radius: 18px; background: #fff; box-shadow: 4px 5px 12px rgba(8,46,114,.06); }
+}
