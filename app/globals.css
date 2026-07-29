@@ -248,4 +248,8 @@
   .dark .mic-orb { box-shadow: 12px 12px 24px rgba(1, 12, 21, .38), inset 2px 2px 5px rgba(255,255,255,.12); }
   .dark .weekly-challenge-card { background: linear-gradient(135deg, #493A22, #1C3443 52%, #123A45) !important; }
   .dark .weekly-challenge-summary { background: rgba(22, 43, 58, .88) !important; }
+
+  /* Theme-safe defaults for legacy utility combinations used throughout the app. */
+  .text-brand-400 { color: #26658C; }
+  .dark .text-brand-400 { color: #8EE5F3; }
 }
