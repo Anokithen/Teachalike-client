@@ -244,4 +244,6 @@
   .dark .vibrant-audio-player { color-scheme: dark; background: #102D3F; border-radius: .75rem; }
   .dark .vibrant-audio-player::-webkit-media-controls-panel { background: linear-gradient(90deg, #102D3F, #252442 56%, #3A3020); }
   .dark .vibrant-audio-player::-webkit-media-controls-enclosure { background-color: #102D3F; border-radius: .75rem; }
+  .dark .voice-file-picker { background: linear-gradient(90deg, #252542, #3A2947 52%, #493A22) !important; border-color: #554B78 !important; }
+  .dark .mic-orb { box-shadow: 12px 12px 24px rgba(1, 12, 21, .38), inset 2px 2px 5px rgba(255,255,255,.12); }
 }
