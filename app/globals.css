@@ -185,4 +185,6 @@
   .sidebar-kids .text-brand-900 { color: white; }
   .sidebar-kids .brand-logo { padding: .35rem; border-radius: 1.1rem; background: rgba(255,255,255,.10); }
   .sidebar-kids .brand-logo-mark { width: 54px; height: 54px; }
+  .sidebar-kids .brand-logo-mark img { width: 47px; height: 47px; }
+  .sidebar-kids .brand-logo span:last-child { color: white; font-size: 1.22rem; }
 }
