@@ -210,4 +210,6 @@
   .dark .bg-white\/80 { background-color: rgb(28 52 67 / .80) !important; }
   .dark .bg-white\/85 { background-color: rgb(28 52 67 / .85) !important; }
   .dark .bg-white\/90 { background-color: rgb(28 52 67 / .90) !important; }
+  .dark .hover\:bg-white:hover { background-color: #244758 !important; }
+  .dark .bg-brand-50 { background-color: #102D3F !important; }
 }
