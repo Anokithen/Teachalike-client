@@ -274,4 +274,6 @@
   .app-content-surface { background: linear-gradient(145deg, #E8F0F5, #EDF4F8); }
   .soft-card, .content-panel, .card, .neumorphic-card { background: rgb(var(--color-surface) / .96); }
   .page-hero { color: #023859; }
+  .page-hero .text-muted { color: #526B7D; }
+  .input::placeholder { opacity: .78; }
 }
