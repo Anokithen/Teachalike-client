@@ -276,4 +276,6 @@
   .page-hero { color: #023859; }
   .page-hero .text-muted { color: #526B7D; }
   .input::placeholder { opacity: .78; }
+  .input:focus { box-shadow: 0 0 0 3px rgb(84 172 191 / .18), inset 2px 2px 5px rgba(2,56,89,.06); }
+  .dark select option { background: #162B3A; color: #E6F3F6; }
 }
