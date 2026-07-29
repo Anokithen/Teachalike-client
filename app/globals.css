@@ -94,4 +94,7 @@
   }
   .neumorphic-card-hover { transition: transform .2s ease, box-shadow .2s ease; }
   .neumorphic-card-hover:hover { transform: translateY(-4px); box-shadow: 12px 14px 28px rgba(2, 56, 89, .14), -8px -8px 20px rgba(255, 255, 255, .92); }
+  .neumorphic-inset { border: 1px solid rgba(211, 225, 231, .72); border-radius: 1.25rem; background: rgb(var(--color-bg) / .65); box-shadow: inset 3px 3px 7px rgba(2, 56, 89, .08), inset -3px -3px 7px rgba(255, 255, 255, .90); }
+  .soft-panel { border: 1px solid rgba(84, 172, 191, .18); border-radius: 1.5rem; background: linear-gradient(135deg, rgba(255,255,255,.76), rgba(234,246,250,.78)); box-shadow: 10px 10px 24px rgba(2,56,89,.08), -8px -8px 20px rgba(255,255,255,.86); }
+  .page-hero { position: relative; overflow: hidden; border: 1px solid #DCEAF3; border-radius: 24px; background: linear-gradient(135deg, #DFF7FC, #fff 62%, #F4F0FF); box-shadow: 8px 10px 24px rgba(8,46,114,.07); color: #082E72; }
 }
