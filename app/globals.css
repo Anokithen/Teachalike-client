@@ -263,4 +263,6 @@
   .dark .page-hero h1, .dark .page-hero .text-brand-900 { color: #F3FAFC; }
   .dark .page-hero .text-brand-600 { color: #8EE5F3; }
   .dark .text-brand-500, .dark .text-brand-700, .dark .text-brand-800 { color: #A8E4EC; }
+  .dark .app-content-surface { background: rgb(15 35 49 / .94); }
+  .dark .leaderboard-board { background: linear-gradient(180deg, #123A45, #102D3F); }
 }
