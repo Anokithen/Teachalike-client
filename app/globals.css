@@ -196,4 +196,6 @@
   .dark body {
     background-image: radial-gradient(circle at 8% 4%, rgba(84, 172, 191, .12), transparent 26rem), radial-gradient(circle at 92% 12%, rgba(91, 93, 212, .10), transparent 24rem), radial-gradient(circle at 50% 100%, rgba(224, 164, 56, .07), transparent 30rem);
   }
+  .dark .card, .dark .neumorphic-card, .dark .stat-card { background: rgb(var(--color-surface) / .96); box-shadow: 10px 10px 24px rgba(1, 12, 21, .28), -8px -8px 22px rgba(72, 111, 128, .08); }
+  .dark .soft-panel { background: linear-gradient(135deg, #123A45, #202544 58%, #2E2948); box-shadow: 10px 10px 24px rgba(1,12,21,.28), -8px -8px 22px rgba(72,111,128,.08); }
 }
