@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'TeachAlike',
     description:
       'A family reading companion with guided sessions, book-linked mini-games, and familiar voice profiles.',
-    start_url: '/',
+    start_url: '/dashboard',
     scope: '/',
     display: 'standalone',
     display_override: ['fullscreen', 'standalone'],

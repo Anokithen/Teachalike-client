@@ -1,10 +1,14 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Logo } from '@/components/layout/Logo';
+import { useStandaloneMode } from '@/components/pwa/PwaProvider';
+import { LoadingSplash } from '@/components/ui/LoadingSplash';
 
 interface Feature {
   title: string;
@@ -31,7 +35,19 @@ const FEATURES: Feature[] = [
 ];
 
 export default function LandingPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  const isStandalone = useStandaloneMode();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && isStandalone && isAuthenticated) {
+      router.replace('/dashboard');
+    }
+  }, [isAuthenticated, isLoading, isStandalone, router]);
+
+  if (isLoading || (isStandalone && isAuthenticated)) {
+    return <LoadingSplash />;
+  }
 
   return (
     <div className="home-night min-h-[100dvh]">
