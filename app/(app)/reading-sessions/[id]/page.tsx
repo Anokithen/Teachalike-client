@@ -256,12 +256,12 @@ export default function ReadingSessionPage() {
             Started {new Date(session.started_at).toLocaleString()}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
           <Badge tone={session.is_complete ? 'success' : 'warning'}>
             {session.is_complete ? 'Complete' : 'In progress'}
           </Badge>
           {!session.is_complete && (
-            <Button variant="secondary" onClick={() => setConfirmComplete(true)}>
+            <Button className="flex-1 sm:flex-none" variant="secondary" onClick={() => setConfirmComplete(true)}>
               <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
               Mark complete
             </Button>
@@ -454,7 +454,7 @@ export default function ReadingSessionPage() {
             <ul className="space-y-3">
               {feedback.map((f) => (
                 <li key={f.id} className="rounded-xl border border-border p-3">
-                  <div className="mb-1 flex items-center justify-between">
+                  <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                     <Badge tone="brand" className="capitalize">
                       {f.feedback_type}
                     </Badge>

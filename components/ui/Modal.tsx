@@ -111,7 +111,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         ref={dialogRef}
-        className="card relative max-h-[min(90vh,44rem)] w-full max-w-md overflow-y-auto rounded-b-none p-5 motion-safe:animate-[modal-card-in_.22s_cubic-bezier(.2,.8,.2,1)] sm:rounded-2xl sm:p-6"
+        className="modal-panel card relative max-h-[min(90dvh,44rem)] w-full max-w-md overflow-y-auto rounded-b-none p-5 motion-safe:animate-[modal-card-in_.22s_cubic-bezier(.2,.8,.2,1)] sm:rounded-2xl sm:p-6"
       >
         {dismissible && (
           <button

@@ -17,7 +17,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <Topbar
             onMenuClick={() => setSidebarOpen(true)}
           />
-          <main className="min-w-0 flex-1 bg-transparent px-3 py-5 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
+          <main className="min-w-0 flex-1 bg-transparent px-3 py-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
             <div className="mx-auto max-w-7xl motion-safe:animate-[fade-slide-in_.25s_ease-out]">{children}</div>
           </main>
         </div>

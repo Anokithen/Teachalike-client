@@ -53,9 +53,9 @@ export function ChildPinModal({ child, onClose, onVerified }: ChildPinModalProps
       <p className="text-muted">Enter the six-digit profile PIN before continuing.</p>
       <Input label="Profile PIN" type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))} />
       <Alert>{error}</Alert>
-      <div className="flex justify-end gap-3">
-        <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-        <Button type="submit" loading={verifying}>Continue</Button>
+      <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
+        <Button className="w-full sm:w-auto" type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+        <Button className="w-full sm:w-auto" type="submit" loading={verifying}>Continue</Button>
       </div>
     </form>
   </Modal>;

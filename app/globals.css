@@ -28,12 +28,19 @@
   body {
     @apply bg-bg text-brand-900 antialiased;
     position: relative;
+    min-width: 0;
     font-size: 16px;
     line-height: 1.5;
     background-image: radial-gradient(circle at 8% 4%, rgba(84, 172, 191, .14), transparent 26rem), radial-gradient(circle at 92% 12%, rgba(145, 89, 245, .08), transparent 24rem), radial-gradient(circle at 50% 100%, rgba(246, 184, 63, .08), transparent 30rem);
     overflow-x: clip;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  img, video, audio, canvas, svg { max-width: 100%; }
   ::selection { background: rgb(84 172 191 / .28); color: #023859; }
   button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
   button, a { touch-action: manipulation; }
@@ -418,4 +425,47 @@
   .leaderboard-hero { background: linear-gradient(135deg, #DFF7FC 0%, #fff 58%, #F1EDFF 100%); }
   .leaderboard-board { background: linear-gradient(180deg, #EAF9FC, #F8FCFE); }
   .leaderboard-table-row { border: 1px solid #DCEAF3; border-radius: 18px; background: #fff; box-shadow: 4px 5px 12px rgba(8,46,114,.06); }
+}
+
+/*
+ * Phones use the full canvas instead of the desktop's floating, framed shell.
+ * This preserves useful horizontal space at 320–430px and keeps installed PWAs
+ * clear of display cutouts. Form controls remain 16px to prevent iOS auto-zoom.
+ */
+@media (max-width: 639px) {
+  .app-shell {
+    gap: 0;
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .app-content-surface {
+    min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .content-panel { min-height: 100%; }
+  .soft-card, .content-panel, .card, .neumorphic-card, .page-hero { border-radius: 20px; }
+  .input { font-size: 16px; }
+  input[type="file"].input { min-width: 0; padding-inline: .65rem; }
+  audio { display: block; width: 100%; min-width: 0; }
+
+  .sidebar-kids {
+    top: max(.5rem, env(safe-area-inset-top));
+    bottom: auto;
+    left: max(.5rem, env(safe-area-inset-left));
+    width: min(19rem, calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right)));
+    height: calc(100dvh - max(.5rem, env(safe-area-inset-top)) - max(.5rem, env(safe-area-inset-bottom)));
+    border-radius: 24px;
+  }
+
+  .modal-panel {
+    max-height: calc(100dvh - env(safe-area-inset-top));
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+
+  .voice-file-picker { align-items: stretch; }
 }

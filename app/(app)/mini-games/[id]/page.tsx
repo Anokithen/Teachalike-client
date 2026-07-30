@@ -276,7 +276,7 @@ export default function MiniGamePage() {
         )}
 
         {isQuiz ? result ? (
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-100 via-white to-violet-200/70 p-7 text-center shadow-inner">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-100 via-white to-violet-200/70 p-4 text-center shadow-inner sm:p-7">
             <Sparkles className="absolute left-6 top-4 h-6 w-6 animate-bounce text-amber-500" aria-hidden="true" />
             <PartyPopper className="absolute right-8 top-8 h-7 w-7 animate-pulse text-violet-500" aria-hidden="true" />
             <Trophy className="mx-auto h-16 w-16 animate-bounce text-amber-500" aria-hidden="true" />
@@ -297,9 +297,9 @@ export default function MiniGamePage() {
               <EmptyState title="Quiz questions are coming soon" description="This book needs a little more story content before the quiz can begin." />
             ) : (
               <>
-                <div className="flex items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-600">Question {quizIndex + 1} of {prompts.length}</p><p className="mt-1 text-sm font-semibold text-brand-900">{currentQuizCorrect ? 'Great story memory!' : currentQuizAnswer ? 'Nice try — read the clue again.' : 'Pick the best answer.'}</p></div><span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-black text-amber-800"><Flame className="h-3.5 w-3.5" aria-hidden="true" />{correctAnswers} points</span></div>
+                <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-600">Question {quizIndex + 1} of {prompts.length}</p><p className="mt-1 text-sm font-semibold text-brand-900">{currentQuizCorrect ? 'Great story memory!' : currentQuizAnswer ? 'Nice try — read the clue again.' : 'Pick the best answer.'}</p></div><span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-black text-amber-800"><Flame className="h-3.5 w-3.5" aria-hidden="true" />{correctAnswers} points</span></div>
                 <div className="h-2 overflow-hidden rounded-full bg-brand-100"><div className="h-full rounded-full bg-gradient-to-r from-brand-500 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${((quizIndex + 1) / prompts.length) * 100}%` }} /></div>
-                <div className="relative overflow-hidden rounded-3xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-6 text-center"><Star className="absolute -right-2 -top-3 h-14 w-14 text-violet-500 opacity-20" aria-hidden="true" /><p className="text-xl font-extrabold leading-snug text-brand-900">{currentQuizPrompt.question}</p><p className="mt-3 text-xs font-semibold text-violet-700">Story word detective clue</p></div>
+                <div className="relative overflow-hidden rounded-3xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4 text-center sm:p-6"><Star className="absolute -right-2 -top-3 h-14 w-14 text-violet-500 opacity-20" aria-hidden="true" /><p className="text-lg font-extrabold leading-snug text-brand-900 sm:text-xl">{currentQuizPrompt.question}</p><p className="mt-3 text-xs font-semibold text-violet-700">Story word detective clue</p></div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {currentQuizPrompt.options.map((option, optionIndex) => {
                     const selected = currentQuizAnswer === option;

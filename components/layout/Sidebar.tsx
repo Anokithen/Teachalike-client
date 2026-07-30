@@ -29,7 +29,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         />
       )}
       <aside
-          className={`sidebar-kids fixed inset-y-4 left-4 z-50 flex h-[calc(100dvh-2rem)] w-[80vw] flex-col overflow-y-auto overscroll-contain p-5 transition-transform lg:inset-y-auto lg:left-4 lg:top-4 lg:h-[calc(100dvh-2rem)] lg:w-[276px] lg:translate-x-0 ${
+          className={`sidebar-kids fixed inset-y-4 left-4 z-50 flex h-[calc(100dvh-2rem)] w-[80vw] flex-col overflow-y-auto overscroll-contain p-4 transition-transform sm:p-5 lg:inset-y-auto lg:left-4 lg:top-4 lg:h-[calc(100dvh-2rem)] lg:w-[276px] lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-[calc(100%+1rem)] pointer-events-none lg:pointer-events-auto'
         }`}
       >

@@ -303,10 +303,10 @@ export default function VoiceProfilesPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div><p className="text-sm font-medium text-brand-900">{profile.label || `Voice profile #${profile.id}`}</p>
                 <p className="text-xs text-muted">{profile.owner_name && `${profile.owner_name} · `}Created {new Date(profile.created_at).toLocaleDateString()} {profile.has_cloned_voice && '· ElevenLabs clone ready'}</p></div>
-              <div className="flex items-center gap-2"><Badge tone={STATUS_TONE[profile.status] || 'warning'}>{profile.status}</Badge>
-                <Button variant="ghost" loading={previewingId === profile.id} onClick={() => onPreview(profile)}><Play className="h-4 w-4" aria-hidden="true" />Play</Button>
-                <Button variant="ghost" onClick={() => { setEditing(profile); setEditLabel(profile.label || ''); }}><Pencil className="h-4 w-4" aria-hidden="true" />Edit</Button>
-                <Button variant="ghost" onClick={() => setPendingDelete(profile)}><Trash2 className="h-4 w-4" aria-hidden="true" />Delete</Button></div>
+              <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto"><Badge tone={STATUS_TONE[profile.status] || 'warning'}>{profile.status}</Badge>
+                <Button className="flex-1 sm:flex-none" variant="ghost" loading={previewingId === profile.id} onClick={() => onPreview(profile)}><Play className="h-4 w-4" aria-hidden="true" />Play</Button>
+                <Button className="flex-1 sm:flex-none" variant="ghost" onClick={() => { setEditing(profile); setEditLabel(profile.label || ''); }}><Pencil className="h-4 w-4" aria-hidden="true" />Edit</Button>
+                <Button className="flex-1 sm:flex-none" variant="ghost" onClick={() => setPendingDelete(profile)}><Trash2 className="h-4 w-4" aria-hidden="true" />Delete</Button></div>
             </div>
           </li>)}
         </ul>}
@@ -342,9 +342,9 @@ export default function VoiceProfilesPage() {
           <label className="block">
             <span className="text-sm font-semibold text-brand-900">Or upload an existing recording</span>
             <input ref={fileInput} type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/wave,audio/vnd.wave,audio/webm,audio/ogg,audio/mp4,audio/x-m4a,video/mp4,.mp3,.wav,.webm,.ogg,.m4a,.mp4" onChange={onFileChange} className="sr-only" />
-            <span className="voice-file-picker mt-2 flex cursor-pointer items-center justify-between gap-3 rounded-xl border-2 border-dashed border-violet-300 bg-gradient-to-r from-violet-50 via-fuchsia-50 to-amber-50 px-4 py-3 transition hover:border-brand-400 hover:shadow-sm">
-              <span className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white"><Upload className="h-5 w-5" aria-hidden="true" /></span><span><span className="block text-sm font-semibold text-violet-700">Choose audio file</span><span className="block text-xs text-muted">MP3, WAV, WebM, OGG, M4A, or MP4 · up to 50 MB</span></span></span>
-              <span className="max-w-28 truncate text-xs font-medium text-brand-600">{file?.name || 'No file chosen'}</span>
+            <span className="voice-file-picker mt-2 flex cursor-pointer flex-col justify-between gap-3 rounded-xl border-2 border-dashed border-violet-300 bg-gradient-to-r from-violet-50 via-fuchsia-50 to-amber-50 px-3 py-3 transition hover:border-brand-400 hover:shadow-sm sm:flex-row sm:items-center sm:px-4">
+              <span className="flex min-w-0 items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white"><Upload className="h-5 w-5" aria-hidden="true" /></span><span className="min-w-0"><span className="block text-sm font-semibold text-violet-700">Choose audio file</span><span className="block text-xs text-muted">MP3, WAV, WebM, OGG, M4A, or MP4 · up to 50 MB</span></span></span>
+              <span className="max-w-full truncate text-xs font-medium text-brand-600 sm:max-w-28">{file?.name || 'No file chosen'}</span>
             </span>
           </label>
           <p className="-mt-2 text-xs text-muted">MP3, WAV, WebM, OGG, or M4A/MP4, smaller than 25 MB. Upload only a voice you have permission to use.</p>

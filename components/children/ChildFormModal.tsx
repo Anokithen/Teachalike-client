@@ -143,11 +143,11 @@ export function ChildFormModal({ open, onClose, onCreated }: ChildFormModalProps
           </p>
         )}
         <Alert>{error}</Alert>
-        <div className="flex justify-end gap-3 pt-1">
-          <Button variant="ghost" type="button" onClick={close}>
+        <div className="flex flex-col-reverse justify-end gap-3 pt-1 sm:flex-row">
+          <Button className="w-full sm:w-auto" variant="ghost" type="button" onClick={close}>
             Cancel
           </Button>
-          <Button type="submit" loading={loading}>
+          <Button className="w-full sm:w-auto" type="submit" loading={loading}>
             Add child
           </Button>
         </div>

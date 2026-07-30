@@ -54,7 +54,7 @@ export default function BooksPage() {
         <Select
           value={filters.age_group}
           onChange={(e) => setFilters({ ...filters, age_group: e.target.value })}
-          className="w-40"
+          className="w-full min-[420px]:w-40"
         >
           <option value="">All ages</option>
           {AGE_GROUPS.map((g) => (
@@ -66,7 +66,7 @@ export default function BooksPage() {
         <Select
           value={filters.reading_level}
           onChange={(e) => setFilters({ ...filters, reading_level: e.target.value })}
-          className="w-48"
+          className="w-full min-[420px]:w-48"
         >
           <option value="">All reading levels</option>
           {READING_LEVELS.map((l) => (

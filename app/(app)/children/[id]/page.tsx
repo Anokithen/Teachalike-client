@@ -232,11 +232,11 @@ export default function ChildDetailPage() {
             </div>
           </div>
         </div>
-        <div className="flex gap-3">
-          <Button variant="secondary" onClick={() => setEditing((v) => !v)}>
+        <div className="flex w-full gap-3 sm:w-auto">
+          <Button className="flex-1 sm:flex-none" variant="secondary" onClick={() => setEditing((v) => !v)}>
             {editing ? 'Cancel' : 'Edit'}
           </Button>
-          <Button variant="danger" onClick={() => setConfirmDelete(true)}>
+          <Button className="flex-1 sm:flex-none" variant="danger" onClick={() => setConfirmDelete(true)}>
             Delete
           </Button>
         </div>

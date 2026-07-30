@@ -9,7 +9,7 @@ interface EmptyStateProps {
 
 export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
-    <div className="neumorphic-card flex flex-col items-center justify-center gap-3 px-6 py-14 text-center">
+    <div className="neumorphic-card flex flex-col items-center justify-center gap-3 px-4 py-10 text-center sm:px-6 sm:py-14">
       <div className="icon-bubble h-16 w-16 text-3xl" aria-hidden="true"><Image src="/Teachalike_logo.png" alt="" width={48} height={48} className="opacity-70" /></div>
       <p className="text-base font-bold text-brand-900">{title}</p>
       {description && <p className="max-w-sm text-sm text-muted">{description}</p>}

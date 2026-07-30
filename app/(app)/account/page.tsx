@@ -157,7 +157,7 @@ export default function AccountPage() {
                 </>
               ) : account.name[0]?.toUpperCase() || '?'}
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <label htmlFor="account-profile-image" className="label">Profile picture (optional)</label>
               <input ref={profileImageInput} id="account-profile-image" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" onChange={onProfileImageChange} className="input" />
               <p className="mt-1 text-xs text-muted">JPG, PNG, or WebP only.</p>
