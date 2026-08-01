@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { GraduationCap, UserRoundSearch } from 'lucide-react';
+import { GraduationCap, UserPlus, UserRoundSearch } from 'lucide-react';
 import { adminApi } from '@/lib/endpoints';
 import { ApiErrorShape, TeacherApplication, TeacherApprovalStatus, TeacherType } from '@/lib/types';
 import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
@@ -15,6 +15,7 @@ import { Alert } from '@/components/ui/Alert';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { Drawer } from '@/components/ui/Drawer';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Spinner } from '@/components/ui/Spinner';
 
@@ -59,6 +60,8 @@ export default function AdminTeachersPage() {
   const [createForm, setCreateForm] = useState<CreateTeacherForm>(EMPTY_CREATE_FORM);
   const [photoInputKey, setPhotoInputKey] = useState(0);
   const [creating, setCreating] = useState(false);
+  const [createDrawerOpen, setCreateDrawerOpen] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -91,17 +94,17 @@ export default function AdminTeachersPage() {
 
   async function createTeacher(event: FormEvent) {
     event.preventDefault();
-    setError(null);
+    setCreateError(null);
     if (!createForm.professionalPhoto) {
-      setError('A professional profile photo is required.');
+      setCreateError('A professional profile photo is required.');
       return;
     }
     if (!isAllowedUploadFile(createForm.professionalPhoto, 'image')) {
-      setError(uploadFormatError('image'));
+      setCreateError(uploadFormatError('image'));
       return;
     }
     if (createForm.professionalPhoto.size > 10 * 1024 * 1024) {
-      setError('The professional photo must be 10 MB or smaller.');
+      setCreateError('The professional photo must be 10 MB or smaller.');
       return;
     }
 
@@ -127,10 +130,11 @@ export default function AdminTeachersPage() {
       setPhotoInputKey((key) => key + 1);
       setStatus('approved');
       setSuccess('Approved teacher account created successfully.');
+      setCreateDrawerOpen(false);
       if (status === 'approved') await load();
     } catch (err) {
       const apiError = err as ApiErrorShape;
-      setError(apiError.fields?.length ? apiError.fields.join(' ') : apiError.message);
+      setCreateError(apiError.fields?.length ? apiError.fields.join(' ') : apiError.message);
     } finally {
       setCreating(false);
     }
@@ -152,6 +156,16 @@ export default function AdminTeachersPage() {
   }
 
   const openApplication = (teacher: TeacherApplication) => setSelected(teacher);
+  const openCreateDrawer = () => {
+    setCreateError(null);
+    setSuccess(null);
+    setCreateDrawerOpen(true);
+  };
+  const closeCreateDrawer = () => {
+    if (creating) return;
+    setCreateError(null);
+    setCreateDrawerOpen(false);
+  };
 
   const actions = (teacher: TeacherApplication) => (
     <div className="flex flex-wrap justify-end gap-2">
@@ -165,15 +179,20 @@ export default function AdminTeachersPage() {
 
   return (
     <div>
-      <PageHeader eyebrow="Admin workspace" title="Teacher applications" icon={GraduationCap} description="Review public applications and manage approved teacher accounts." />
+      <PageHeader
+        eyebrow="Admin workspace"
+        title="Teacher applications"
+        icon={GraduationCap}
+        description="Review public applications and manage approved teacher accounts."
+        action={<Button onClick={openCreateDrawer}><UserPlus className="h-4 w-4" aria-hidden="true" />Create teacher</Button>}
+      />
       <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Filter teacher applications">
         {FILTERS.map((filter) => <Button key={filter} variant={status === filter ? 'primary' : 'secondary'} onClick={() => setStatus(filter)} className="capitalize">{filter}</Button>)}
       </div>
       {success && <div className="mb-4"><Alert tone="success">{success}</Alert></div>}
       {error && <div className="mb-4"><Alert>{error}</Alert></div>}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_400px]">
-        <section aria-label={`${status} teacher applications`}>
+      <section aria-label={`${status} teacher applications`}>
           {!teachers && !error && <div className="flex justify-center py-16"><Spinner size={28} /></div>}
           {teachers?.length === 0 && <EmptyState title={`No ${status} teacher applications`} description="Applications will appear here when their status matches this filter." />}
           {teachers && teachers.length > 0 && <>
@@ -190,13 +209,18 @@ export default function AdminTeachersPage() {
             </div>
             <div className="grid gap-4 md:hidden">{teachers.map((teacher) => <Card key={teacher.id}><div className="flex gap-3">{teacher.profile_image_url && <img src={teacher.profile_image_url} alt="" className="h-14 w-14 rounded-full object-cover" />}<div className="min-w-0"><button type="button" className="block max-w-full truncate text-left font-semibold text-brand-900 underline-offset-4 hover:text-brand-600 hover:underline focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400" onClick={() => openApplication(teacher)} aria-label={`View ${teacher.name}'s teacher application`}>{teacher.name}</button><p className="break-all text-sm text-muted">{teacher.email}</p><Badge tone={statusTone(teacher.approval_status)} className="mt-2 capitalize">{teacher.approval_status}</Badge></div></div><div className="mt-4">{actions(teacher)}</div></Card>)}</div>
           </>}
-        </section>
+      </section>
 
-        <Card className="h-fit">
-          <h2 className="mb-1 font-semibold text-brand-900">Create approved teacher</h2>
-          <p className="mb-4 text-xs text-muted">Enter the same complete profile required during teacher signup. Admin-created teachers are approved immediately.</p>
+      <Drawer
+        open={createDrawerOpen}
+        onClose={closeCreateDrawer}
+        dismissible={!creating}
+        title="Create approved teacher"
+        description="Enter the same complete profile required during teacher signup. Admin-created teachers are approved immediately."
+      >
+          {createError && <div className="mb-4"><Alert>{createError}</Alert></div>}
           <form onSubmit={createTeacher} className="space-y-4">
-            <Input label="Name" name="create_teacher_name" autoComplete="name" required maxLength={120} value={createForm.name} onChange={(event) => setCreateForm({ ...createForm, name: event.target.value })} />
+            <Input label="Name" name="create_teacher_name" autoComplete="name" required maxLength={120} value={createForm.name} onChange={(event) => setCreateForm({ ...createForm, name: event.target.value })} data-drawer-initial-focus />
             <Input label="Email" name="create_teacher_email" type="email" autoComplete="email" required maxLength={120} value={createForm.email} onChange={(event) => setCreateForm({ ...createForm, email: event.target.value })} />
             <Input label="Password" name="create_teacher_password" type="password" autoComplete="new-password" required minLength={8} maxLength={128} value={createForm.password} onChange={(event) => setCreateForm({ ...createForm, password: event.target.value })} />
             <Input label="Phone number" name="create_teacher_phone" type="tel" autoComplete="tel" required maxLength={40} value={createForm.phoneNumber} onChange={(event) => setCreateForm({ ...createForm, phoneNumber: event.target.value })} />
@@ -212,10 +236,12 @@ export default function AdminTeachersPage() {
             )}
             <Input key={photoInputKey} label="Professional profile photo" name="create_teacher_photo" type="file" required accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => setCreateForm({ ...createForm, professionalPhoto: event.target.files?.[0] || null })} aria-describedby="admin-professional-photo-help" />
             <p id="admin-professional-photo-help" className="text-xs text-muted">JPG, PNG or WebP, up to 10 MB. This becomes the teacher&apos;s profile picture.</p>
-            <Button type="submit" loading={creating} className="w-full">Create teacher</Button>
+            <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
+              <Button type="button" variant="ghost" disabled={creating} onClick={closeCreateDrawer}>Cancel</Button>
+              <Button type="submit" loading={creating}>Create approved teacher</Button>
+            </div>
           </form>
-        </Card>
-      </div>
+      </Drawer>
 
       <TeacherDetails
         teacher={selected}

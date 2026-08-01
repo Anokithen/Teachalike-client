@@ -337,6 +337,7 @@
   @keyframes fade-slide-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes modal-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
   @keyframes modal-card-in { from { opacity: 0; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes drawer-panel-in { from { opacity: .7; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -465,6 +466,11 @@
   .modal-panel {
     max-height: calc(100dvh - env(safe-area-inset-top));
     padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+
+  .drawer-panel {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .voice-file-picker { align-items: stretch; }
