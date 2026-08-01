@@ -27,9 +27,10 @@ import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Alert } from '@/components/ui/Alert';
 import { ApiErrorShape, Book, Child, ChildStats, LeaderboardEntry, VoiceProfile } from '@/lib/types';
+import { BookAttribution } from '@/components/books/BookAttribution';
 
 export default function DashboardPage() {
-  const { account, isAdmin } = useAuth();
+  const { account, isAdmin, isTeacher } = useAuth();
   const [children, setChildren] = useState<Child[] | null>(null);
   const [childStats, setChildStats] = useState<Record<number, ChildStats>>({});
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[] | null>(null);
@@ -111,6 +112,12 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            {isTeacher && (
+              <Link href="/teacher/books/create" className="btn-home-outline gap-2 bg-white/10 transition hover:-translate-y-0.5 hover:bg-white/20">
+                <LibraryBig className="h-4 w-4" aria-hidden="true" />
+                Create book
+              </Link>
+            )}
             {!isAdmin && (
               <Link href="/children" className="btn-home-outline gap-2 bg-white/10 transition hover:-translate-y-0.5 hover:bg-white/20">
                 <Plus className="h-4 w-4" aria-hidden="true" />
@@ -265,7 +272,7 @@ function ParentDashboard({
           <div className="mb-4 flex items-center justify-between"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-500">Keep exploring</p><h2 className="mt-1 text-xl font-bold text-brand-900">Find the next favourite</h2></div><Link href="/books" className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:underline">Library <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
           {!books && <div className="flex justify-center py-8"><Spinner /></div>}
           {books && books.length === 0 && <p className="rounded-2xl bg-bg p-4 text-sm text-muted">The library is getting ready for you.</p>}
-          {books && books.length > 0 && <div className="grid gap-3 sm:grid-cols-3">{books.slice(0, 3).map((book) => <Link key={book.id} href={`/books/${book.id}`} className="group overflow-hidden rounded-2xl border border-border bg-bg transition-all hover:-translate-y-1 hover:shadow-md">{book.cover_image_url ? (<><span className="sr-only">Book cover</span><img src={book.cover_image_url} alt="" className="h-24 w-full object-cover transition-transform duration-300 group-hover:scale-105" /></>) : <div className="grid h-24 place-items-center bg-gradient-to-br from-cyan-100 to-violet-100 text-brand-600"><BookOpen className="h-8 w-8" aria-hidden="true" /></div>}<div className="p-3"><h3 className="truncate text-sm font-bold text-brand-900 group-hover:text-brand-600">{book.title}</h3><Badge className="mt-2" tone="neutral">{book.age_group}</Badge></div></Link>)}</div>}
+          {books && books.length > 0 && <div className="grid gap-3 sm:grid-cols-3">{books.slice(0, 3).map((book) => <Link key={book.id} href={`/books/${book.id}`} className="group overflow-hidden rounded-2xl border border-border bg-bg transition-all hover:-translate-y-1 hover:shadow-md">{book.cover_image_url ? (<><span className="sr-only">Book cover</span><img src={book.cover_image_url} alt="" className="h-24 w-full object-cover transition-transform duration-300 group-hover:scale-105" /></>) : <div className="grid h-24 place-items-center bg-gradient-to-br from-cyan-100 to-violet-100 text-brand-600"><BookOpen className="h-8 w-8" aria-hidden="true" /></div>}<div className="p-3"><h3 className="truncate text-sm font-bold text-brand-900 group-hover:text-brand-600">{book.title}</h3><BookAttribution label={book.created_by_label} className="mt-1 text-xs" /><Badge className="mt-2" tone="neutral">{book.age_group}</Badge></div></Link>)}</div>}
         </Card>
         <Card>
           <div className="mb-4 flex items-center justify-between"><h2 className="text-sm font-bold text-brand-900">Leaderboard pulse</h2><Link href="/leaderboard" className="text-xs font-semibold text-brand-600 hover:underline">View all</Link></div>
@@ -300,7 +307,7 @@ function AdminDashboard({ readerList, books, voiceProfiles, leaderboard }: { rea
         <DashboardLink href="/children" icon={Baby} title="View all readers" body="Browse profiles and learning activity." />
       </section>
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(18rem,.75fr)]">
-        <Card><div className="mb-4 flex items-center justify-between"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-500">Library pulse</p><h2 className="mt-1 text-xl font-bold text-brand-900">Recently available books</h2></div><Link href="/books" className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:underline">Open library <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>{books?.length ? <div className="grid gap-3 sm:grid-cols-3">{books.slice(-3).reverse().map((book) => <Link key={book.id} href={`/books/${book.id}`} className="rounded-2xl border border-border bg-bg p-4 transition-all hover:-translate-y-1 hover:bg-white hover:shadow-md">{book.cover_image_url ? <ImageIcon className="h-6 w-6 text-brand-600" aria-hidden="true" /> : <BookOpen className="h-6 w-6 text-brand-600" aria-hidden="true" />}<h3 className="mt-3 truncate text-sm font-bold text-brand-900">{book.title}</h3><p className="mt-1 text-xs text-muted">{book.age_group} · {book.reading_level}</p></Link>)}</div> : <p className="text-sm text-muted">No books have been added yet.</p>}</Card>
+        <Card><div className="mb-4 flex items-center justify-between"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-500">Library pulse</p><h2 className="mt-1 text-xl font-bold text-brand-900">Recently available books</h2></div><Link href="/books" className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:underline">Open library <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>{books?.length ? <div className="grid gap-3 sm:grid-cols-3">{books.slice(-3).reverse().map((book) => <Link key={book.id} href={`/books/${book.id}`} className="rounded-2xl border border-border bg-bg p-4 transition-all hover:-translate-y-1 hover:bg-white hover:shadow-md">{book.cover_image_url ? <ImageIcon className="h-6 w-6 text-brand-600" aria-hidden="true" /> : <BookOpen className="h-6 w-6 text-brand-600" aria-hidden="true" />}<h3 className="mt-3 truncate text-sm font-bold text-brand-900">{book.title}</h3><BookAttribution label={book.created_by_label} className="mt-1 text-xs" /><p className="mt-1 text-xs text-muted">{book.age_group} · {book.reading_level}</p></Link>)}</div> : <p className="text-sm text-muted">No books have been added yet.</p>}</Card>
         <Card className="bg-gradient-to-br from-violet-50 to-cyan-50"><p className="text-xs font-semibold uppercase tracking-[.16em] text-violet-700">Admin shortcut</p><h2 className="mt-2 text-xl font-bold text-brand-900">Keep the library fresh</h2><p className="mt-3 text-sm leading-6 text-muted">Add a new AI-assisted story, upload illustrations one by one, and make it playable in minutes.</p><Link href="/admin/books/new" className="btn-primary mt-5 inline-flex gap-2">Create a book <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></Card>
       </section>
     </>

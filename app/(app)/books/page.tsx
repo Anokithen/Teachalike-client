@@ -11,6 +11,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Select } from '@/components/ui/Input';
 import { ApiErrorShape, Book, ReadingLevel } from '@/lib/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { BookAttribution } from '@/components/books/BookAttribution';
 
 const READING_LEVELS: ReadingLevel[] = ['beginner', 'intermediate', 'advanced'];
 const AGE_GROUPS = ['3-5', '6-8', '9-11', '12+'];
@@ -101,6 +102,7 @@ export default function BooksPage() {
                   <img src={book.cover_image_url} alt="" className="mb-4 h-32 w-full rounded-xl object-cover" />
                 )}
                 <h3 className="mb-2 text-base font-semibold text-brand-900">{book.title}</h3>
+                <BookAttribution label={book.created_by_label} className="mb-3" />
                 <div className="flex flex-wrap gap-2">
                   <Badge tone="brand">{book.age_group}</Badge>
                   <Badge tone="neutral">{book.reading_level}</Badge>

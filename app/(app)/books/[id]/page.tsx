@@ -34,6 +34,7 @@ import { ChildPinModal } from '@/components/children/ChildPinModal';
 import { BookEditModal } from '@/components/books/BookEditModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ApiErrorShape, Book, BookEngagement, BookNarration, Child, MiniGame, VoiceProfile } from '@/lib/types';
+import { BookAttribution } from '@/components/books/BookAttribution';
 
 const GAME_DETAILS: Record<string, { icon: LucideIcon; goal: string; description: string }> = {
   word_puzzle: { icon: Puzzle, goal: 'Word builder', description: 'Put mixed-up letters in the right order to build book words.' },
@@ -268,6 +269,8 @@ export default function BookDetailPage() {
       <div className="mt-4 flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0 flex-1">
           <h1 className="break-words text-2xl font-semibold text-brand-900">{book.title}</h1>
+          <BookAttribution label={book.created_by_label} className="mt-2" />
+          {book.description && <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">{book.description}</p>}
           <div className="mt-2 flex gap-2">
             <Badge tone="brand">{book.age_group}</Badge>
             <Badge tone="neutral">{book.reading_level}</Badge>

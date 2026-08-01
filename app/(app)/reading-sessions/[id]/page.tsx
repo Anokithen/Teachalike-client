@@ -22,6 +22,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ApiErrorShape, Book, BookNarration, PronunciationCheck, ReadingSession, SessionFeedback, VoiceProfile } from '@/lib/types';
 import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
+import { BookAttribution } from '@/components/books/BookAttribution';
 
 export default function ReadingSessionPage() {
   const { id } = useParams<{ id: string }>();
@@ -252,6 +253,7 @@ export default function ReadingSessionPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-brand-900">Reading session #{session.id}</h1>
+          {book && <><p className="mt-1 font-semibold text-brand-700">{book.title}</p><BookAttribution label={book.created_by_label} className="mt-1" /></>}
           <p className="mt-1 text-sm text-muted">
             Started {new Date(session.started_at).toLocaleString()}
           </p>
