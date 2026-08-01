@@ -3,6 +3,40 @@
 Next.js (App Router) + Tailwind CSS frontend for the TeachAlike Flask backend (`Teach-api`),
 built from `TeachAlike_Frontend_Spec.md`.
 
+## Teacher applications and book engagement
+
+The public `/register` route supports parent and teacher account types. Parent
+registration preserves the original automatic-login flow. Teacher selection
+reveals the accessible conditional form for phone, address, teacher type,
+optional school/tuition name, and required professional photo. Successful
+teacher applications show a waiting-for-approval screen and never store JWTs.
+The login page displays the API's pending, rejected, rejection-reason, and
+banned messages; normalized API errors preserve stable `error_code` values.
+
+Administrators review private application details at `/admin/teachers`, filter
+pending/approved/rejected applications, approve or reject them, and retain the
+existing create/ban/unban/delete controls. Long addresses are contained in an
+accessible details modal, and reject/delete actions require confirmation.
+
+Book details now record one server-deduplicated view after a successful load,
+show view/read/like totals, and let a verified selected child like or unlike the
+book. The existing child selector and PIN dialog are reused; parents or teachers
+cannot submit a like without an accessible child. Narration, gallery, mini-game,
+reading-session, and admin book controls remain intact.
+
+The admin sidebar's **Book views** item opens `/admin/book-views`, which provides
+responsive search/sort/pagination analytics for total and unique views, reads,
+completed reads, unique readers, and child likes. It shows aggregate data only.
+
+Related API calls live in `lib/endpoints.ts`; shared teacher and engagement
+types live in `lib/types.ts`. No new frontend environment variables are needed.
+After setting the existing `NEXT_PUBLIC_API_URL`, verify changes with:
+
+```bash
+npm run lint
+npm run build
+```
+
 ## Setup
 
 ```bash
