@@ -19,7 +19,7 @@ export interface NavItem {
   icon: LucideIcon;
 }
 
-export function getNavItems({ isAdmin }: { isAdmin: boolean }): NavItem[] {
+export function getNavItems({ isAdmin, isTeacher = false }: { isAdmin: boolean; isTeacher?: boolean }): NavItem[] {
   if (isAdmin) {
     return [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -35,7 +35,7 @@ export function getNavItems({ isAdmin }: { isAdmin: boolean }): NavItem[] {
       { href: '/account', label: 'My account', icon: UserCircle },
     ];
   }
-  return [
+  const items: NavItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/children', label: 'Children', icon: Baby },
     { href: '/books', label: 'Books', icon: BookOpen },
@@ -43,4 +43,11 @@ export function getNavItems({ isAdmin }: { isAdmin: boolean }): NavItem[] {
     { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { href: '/account', label: 'My account', icon: UserCircle },
   ];
+  if (isTeacher) {
+    items.splice(1, 0,
+      { href: '/teacher/books', label: 'My books', icon: LibraryBig },
+      { href: '/teacher/books/create', label: 'Create book', icon: BookOpen },
+    );
+  }
+  return items;
 }

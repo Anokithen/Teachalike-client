@@ -15,8 +15,11 @@ interface SidebarProps {
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAdmin } = useAuth();
-  const items = getNavItems({ isAdmin });
+  const { isAdmin, isTeacher } = useAuth();
+  const items = getNavItems({ isAdmin, isTeacher });
+  const activeHref = items
+    .filter((item) => pathname === item.href || pathname?.startsWith(item.href + '/'))
+    .sort((left, right) => right.href.length - left.href.length)[0]?.href;
 
   return (
     <>
@@ -46,7 +49,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </div>
         <nav aria-label="Main navigation" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-1">
           {items.map((item) => {
-            const active = pathname === item.href || pathname?.startsWith(item.href + '/');
+            const active = item.href === activeHref;
             return (
               <Link
                 key={item.href}
