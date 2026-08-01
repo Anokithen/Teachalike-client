@@ -1,5 +1,6 @@
 import {
   Baby,
+  BarChart3,
   BookOpen,
   GraduationCap,
   LayoutDashboard,
@@ -26,6 +27,7 @@ export function getNavItems({ isAdmin }: { isAdmin: boolean }): NavItem[] {
       { href: '/admin/teachers', label: 'Teachers', icon: GraduationCap },
       { href: '/admin/admins/new', label: 'Add admin', icon: ShieldPlus },
       { href: '/admin/books/new', label: 'Add book', icon: LibraryBig },
+      { href: '/admin/book-views', label: 'Book views', icon: BarChart3 },
       { href: '/voice-profiles', label: 'Voice recordings', icon: Mic2 },
       { href: '/children', label: 'Children', icon: Baby },
       { href: '/books', label: 'Books', icon: BookOpen },
