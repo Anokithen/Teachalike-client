@@ -25,6 +25,7 @@ export function TeacherBookForm({ book }: Props) {
   const [cover, setCover] = useState<File | null>(null);
   const [illustrations, setIllustrations] = useState<File[]>([]);
   const [video, setVideo] = useState<File | null>(null);
+  const [teacherAudio, setTeacherAudio] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | string[] | null>(null);
 
@@ -68,6 +69,7 @@ export function TeacherBookForm({ book }: Props) {
     if (cover) data.append('cover_image', cover);
     illustrations.forEach((file) => data.append('illustrations', file));
     if (video) data.append('video', video);
+    if (teacherAudio) data.append('teacher_audio', teacherAudio);
     try {
       if (book) await teacherBooksApi.update(book.id, data);
       else await teacherBooksApi.create(data, requestKey.current);
@@ -106,16 +108,18 @@ export function TeacherBookForm({ book }: Props) {
 
       <Card>
         <div className="mb-5 flex items-center gap-3"><ImagePlus className="h-5 w-5 text-brand-600" aria-hidden="true" /><div><h2 className="font-semibold text-brand-900">Book media</h2><p className="text-sm text-muted">Images are checked before being stored in the book’s server-owned Cloudinary folder.</p></div></div>
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2">
           <label className="block"><span className="label">Cover image</span><input className="input file:mr-3 file:rounded-lg file:border-0 file:bg-brand-400/10 file:px-3 file:py-1 file:text-brand-700" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => setCover(event.target.files?.[0] || null)} /></label>
           <label className="block"><span className="label">Illustrations (up to 8)</span><input className="input file:mr-3 file:rounded-lg file:border-0 file:bg-brand-400/10 file:px-3 file:py-1 file:text-brand-700" type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(event) => setIllustrations(Array.from(event.target.files || []))} /></label>
           <label className="block"><span className="label">Story video (optional)</span><input className="input file:mr-3 file:rounded-lg file:border-0 file:bg-brand-400/10 file:px-3 file:py-1 file:text-brand-700" type="file" accept="video/mp4,video/webm,video/quicktime" onChange={(event) => setVideo(event.target.files?.[0] || null)} /></label>
+          <label className="block"><span className="label">Your official narration (optional)</span><input className="input file:mr-3 file:rounded-lg file:border-0 file:bg-brand-400/10 file:px-3 file:py-1 file:text-brand-700" type="file" accept="audio/mpeg,audio/wav,audio/webm,audio/ogg,audio/mp4" onChange={(event) => setTeacherAudio(event.target.files?.[0] || null)} /><span className="mt-1 block text-xs text-muted">Stored privately as this book’s teacher narration.</span></label>
         </div>
         {(coverPreview || illustrationPreviews.length > 0) && <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Selected image previews">
           {coverPreview && <div><p className="mb-1 text-xs font-semibold text-muted">Cover</p><img src={coverPreview} alt="Cover preview" className="h-28 w-full rounded-xl object-cover" /></div>}
           {illustrationPreviews.map((url, index) => <div key={url}><p className="mb-1 text-xs font-semibold text-muted">Page {index + 1}</p><img src={url} alt={`Illustration ${index + 1} preview`} className="h-28 w-full rounded-xl object-cover" /></div>)}
         </div>}
         {video && <p className="mt-4 inline-flex items-center gap-2 text-sm text-muted"><Upload className="h-4 w-4" />Ready to upload {video.name}</p>}
+        {teacherAudio && <p className="mt-2 inline-flex items-center gap-2 text-sm text-muted"><Upload className="h-4 w-4" />Ready to upload narration {teacherAudio.name}</p>}
       </Card>
       <div className="flex flex-wrap justify-end gap-3">
         <Button type="button" variant="ghost" disabled={submitting} onClick={() => router.push('/teacher/books')}>Cancel</Button>
