@@ -170,8 +170,6 @@ export const adminApi = {
   bookAnalytics: (params: { search?: string; sort?: 'views' | 'reads' | 'likes'; page?: number } = {}) =>
     api.get('/api/admin/book-analytics', { params }),
 
-  createAdmin: (payload: { name: string; email: string; password: string }) =>
-    api.post('/api/admin/admins', payload),
   createBook: (payload: {
     title: string;
     description?: string;
