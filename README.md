@@ -48,6 +48,14 @@ analytics. Teacher-created books show `Created by <Teacher Name>`; legacy and
 system books show `Created by TeachAlike`. No teacher contact or workplace data
 is included in the book type or rendered response.
 
+Teacher book forms can also upload one official teacher narration. The client
+sends only the file in the authenticated book request; the API derives the
+teacher, book, canonical Cloudinary folder, public ID, and Asset owner. Admin
+cover and illustration uploads now occur after the book ID exists through the
+book-scoped image endpoint, allowing the backend to use the centralized
+`Books/...` storage tree. No frontend request contains a Cloudinary folder or
+public ID.
+
 Related API calls live in `lib/endpoints.ts`; shared teacher and engagement
 types live in `lib/types.ts`. No new frontend environment variables are needed.
 After setting the existing `NEXT_PUBLIC_API_URL`, verify changes with:
