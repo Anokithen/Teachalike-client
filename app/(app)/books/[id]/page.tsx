@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Gamepad2,
+  Eye,
+  Heart,
   Pencil,
   Play,
   Puzzle,
@@ -31,7 +33,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ChildPinModal } from '@/components/children/ChildPinModal';
 import { BookEditModal } from '@/components/books/BookEditModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { ApiErrorShape, Book, BookNarration, Child, MiniGame, VoiceProfile } from '@/lib/types';
+import { ApiErrorShape, Book, BookEngagement, BookNarration, Child, MiniGame, VoiceProfile } from '@/lib/types';
 
 const GAME_DETAILS: Record<string, { icon: LucideIcon; goal: string; description: string }> = {
   word_puzzle: { icon: Puzzle, goal: 'Word builder', description: 'Put mixed-up letters in the right order to build book words.' },
@@ -50,6 +52,10 @@ export default function BookDetailPage() {
   const [voiceProfiles, setVoiceProfiles] = useState<VoiceProfile[]>([]);
   const [narrations, setNarrations] = useState<BookNarration[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [engagement, setEngagement] = useState<BookEngagement | null>(null);
+  const [likeLoading, setLikeLoading] = useState(false);
+  const [likeError, setLikeError] = useState<string | null>(null);
+  const viewRequested = useRef(false);
 
   const [childId, setChildId] = useState('');
   const [pendingChild, setPendingChild] = useState<Child | null>(null);
@@ -80,6 +86,12 @@ export default function BookDetailPage() {
         setMiniGames(gamesRes.data.mini_games);
         setChildren(childrenRes.data.children);
         setNarrations(narrationsRes.data.book_narrations);
+        if (!viewRequested.current) {
+          viewRequested.current = true;
+          try { await booksApi.recordView(id); } catch { /* Engagement still loads if view recording is temporarily unavailable. */ }
+        }
+        const engagementRes = await booksApi.engagement(id);
+        setEngagement(engagementRes.data);
       } catch (err) {
         setError((err as ApiErrorShape).message);
       }
@@ -94,6 +106,17 @@ export default function BookDetailPage() {
   }, [id]);
 
   useEffect(() => setImageIndex(0), [id]);
+
+  useEffect(() => {
+    if (!book) return;
+    let active = true;
+    booksApi.engagement(id, childId || undefined).then((response) => {
+      if (active) setEngagement(response.data);
+    }).catch((err) => {
+      if (active) setLikeError((err as ApiErrorShape).message);
+    });
+    return () => { active = false; };
+  }, [book, childId, id]);
 
   const selectedNarration = narrations.find((narration) => String(narration.voice_profile_id) === narrationVoiceId) || null;
   const storyImages = [book?.cover_image_url, ...(book?.image_urls || [])].filter(Boolean) as string[];
@@ -203,6 +226,29 @@ export default function BookDetailPage() {
     if (selected && !selected.has_pin) setChildId(String(selected.id));
   }
 
+  async function toggleLike() {
+    if (!childId) {
+      setLikeError('Choose and verify a child before liking this book.');
+      return;
+    }
+    if (!engagement) return;
+    setLikeLoading(true);
+    setLikeError(null);
+    try {
+      if (engagement.liked_by_child) await booksApi.unlike(id, childId);
+      else await booksApi.like(id, childId);
+      setEngagement((current) => current ? {
+        ...current,
+        likes: Math.max(0, current.likes + (current.liked_by_child ? -1 : 1)),
+        liked_by_child: !current.liked_by_child,
+      } : current);
+    } catch (err) {
+      setLikeError((err as ApiErrorShape).message);
+    } finally {
+      setLikeLoading(false);
+    }
+  }
+
   if (error) return <Alert>{error}</Alert>;
   if (!book) {
     return (
@@ -225,6 +271,11 @@ export default function BookDetailPage() {
           <div className="mt-2 flex gap-2">
             <Badge tone="brand">{book.age_group}</Badge>
             <Badge tone="neutral">{book.reading_level}</Badge>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-3" aria-label="Book engagement">
+            <span className="soft-inset inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold text-brand-900"><Eye className="h-4 w-4 text-brand-600" aria-hidden="true" />{(engagement?.total_views ?? 0).toLocaleString()} views</span>
+            <span className="soft-inset inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold text-brand-900"><BookOpen className="h-4 w-4 text-brand-600" aria-hidden="true" />{(engagement?.total_reads ?? 0).toLocaleString()} reads</span>
+            <span className="soft-inset inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold text-brand-900"><Heart className="h-4 w-4 text-pink" aria-hidden="true" />{(engagement?.likes ?? 0).toLocaleString()} likes</span>
           </div>
           {isAdmin && (
             <div className="mt-4 flex flex-wrap gap-2">
@@ -328,6 +379,14 @@ export default function BookDetailPage() {
               </Select>
             )}
             <Alert>{startError}</Alert>
+            {!isAdmin && <div className="rounded-2xl border border-pink/25 bg-pink/5 p-3">
+              <Button type="button" variant={engagement?.liked_by_child ? 'secondary' : 'ghost'} loading={likeLoading} disabled={!childId || !engagement} onClick={toggleLike} className="w-full" aria-label={engagement?.liked_by_child ? 'Unlike this book for selected child' : 'Like this book for selected child'} aria-pressed={Boolean(engagement?.liked_by_child)}>
+                <Heart className={`h-5 w-5 ${engagement?.liked_by_child ? 'fill-pink text-pink' : 'text-pink'}`} aria-hidden="true" />
+                {engagement?.liked_by_child ? 'Unlike this book' : 'Like this book'}
+              </Button>
+              {!childId && <p className="mt-2 text-center text-xs text-muted">Choose and verify a child to like books.</p>}
+              {likeError && <div className="mt-2"><Alert>{likeError}</Alert></div>}
+            </div>}
             <Button type="submit" loading={starting} className="w-full">
               <BookOpen className="h-4 w-4" aria-hidden="true" />
               Start reading session
