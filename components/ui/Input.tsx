@@ -1,7 +1,7 @@
 'use client';
 
 import { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes, useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { ChevronDown, Eye, EyeOff } from 'lucide-react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -12,6 +12,7 @@ export function Input({ label, error, id, type = 'text', className = '', ...prop
   const inputId = id || props.name;
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
+  const controlClass = type === 'date' ? 'input-date' : type === 'file' ? 'input-file' : '';
 
   return (
     <div>
@@ -24,7 +25,7 @@ export function Input({ label, error, id, type = 'text', className = '', ...prop
         <input
           id={inputId}
           type={isPassword && showPassword ? 'text' : type}
-          className={`input ${isPassword ? 'pr-16' : ''} ${error ? 'border-danger focus:border-danger focus:ring-danger/20' : ''} ${className}`}
+          className={`input ${controlClass} ${isPassword ? 'pr-16' : ''} ${error ? 'border-danger focus:border-danger focus:ring-danger/20' : ''} ${className}`}
           aria-invalid={!!error}
           {...props}
         />
@@ -66,14 +67,19 @@ export function Select({ label, error, id, className = '', children, ...props }:
           {label}
         </label>
       )}
-      <select
-        id={inputId}
-        className={`input ${error ? 'border-danger' : ''} ${className}`}
-        aria-invalid={!!error}
-        {...props}
-      >
-        {children}
-      </select>
+      <div className="relative">
+        <select
+          id={inputId}
+          className={`input select-input ${error ? 'border-danger' : ''} ${className}`}
+          aria-invalid={!!error}
+          {...props}
+        >
+          {children}
+        </select>
+        <span className="select-chevron" aria-hidden="true">
+          <ChevronDown className="h-4 w-4" strokeWidth={2.5} />
+        </span>
+      </div>
       {error && <p className="mt-1 text-sm text-danger">{error}</p>}
     </div>
   );
