@@ -1,6 +1,23 @@
 // Shared domain types for the TeachAlike frontend.
 
 export type Role = 'parent' | 'teacher' | 'admin';
+export type PublicAccountType = 'parent' | 'teacher';
+export type TeacherType = 'school' | 'private_tuition';
+export type TeacherApprovalStatus = 'pending' | 'approved' | 'rejected';
+
+export interface TeacherProfile {
+  phone_number: string | null;
+  address: string | null;
+  teacher_type: TeacherType | null;
+  school_name: string | null;
+  tuition_name: string | null;
+  approval_status: TeacherApprovalStatus;
+  reviewed_by_id: number | null;
+  reviewed_at: string | null;
+  rejection_reason: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export type ReadingLevel = 'beginner' | 'intermediate' | 'advanced';
 export type ChildGender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
@@ -14,6 +31,22 @@ export interface Account {
   is_banned?: boolean;
   profile_image_url?: string | null;
   children_count?: number;
+  teacher_profile?: TeacherProfile;
+}
+
+export interface TeacherApplication extends Account, TeacherProfile {}
+
+export interface ParentRegistrationPayload {
+  account_type: 'parent';
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface RegistrationResponse {
+  message: string;
+  parent?: Account;
+  teacher?: Account;
 }
 
 export interface ChildStats {
@@ -136,6 +169,26 @@ export interface ApiErrorShape {
   message: string;
   fields: string[];
   status?: number;
+  errorCode?: string;
+  rejectionReason?: string;
+}
+
+export interface BookEngagement {
+  book_id: number;
+  total_views: number;
+  unique_viewers: number;
+  total_reads: number;
+  completed_reads: number;
+  unique_readers: number;
+  likes: number;
+  liked_by_child?: boolean;
+}
+
+export interface BookAnalytics extends BookEngagement {
+  title: string;
+  age_group: string;
+  reading_level: ReadingLevel;
+  cover_image_url?: string;
 }
 
 export interface AiModel {

@@ -51,6 +51,8 @@ interface BackendErrorData {
   errors?: string[];
   error?: string;
   message?: string;
+  error_code?: string;
+  rejection_reason?: string;
 }
 
 function normalizeBackendErrorData(
@@ -58,13 +60,15 @@ function normalizeBackendErrorData(
   status?: number,
 ): ApiErrorShape | null {
   if (data?.errors && Array.isArray(data.errors)) {
-    return { message: data.errors.join(' '), fields: data.errors, status };
+    return { message: data.errors.join(' '), fields: data.errors, status, errorCode: data.error_code, rejectionReason: data.rejection_reason };
   }
   if (data?.error) {
-    return { message: data.error, fields: [data.error], status };
+    const fields = [data.error];
+    if (data.rejection_reason) fields.push(`Reason: ${data.rejection_reason}`);
+    return { message: fields.join(' '), fields, status, errorCode: data.error_code, rejectionReason: data.rejection_reason };
   }
   if (data?.message) {
-    return { message: data.message, fields: [data.message], status };
+    return { message: data.message, fields: [data.message], status, errorCode: data.error_code, rejectionReason: data.rejection_reason };
   }
   return null;
 }
@@ -124,6 +128,20 @@ api.interceptors.response.use(
   async (error: AxiosError<BackendErrorData | Blob>) => {
     const originalRequest = error.config as RetryableRequestConfig | undefined;
     const status = error.response?.status;
+    const responseData = error.response?.data;
+    const approvalCode = (
+      responseData && typeof responseData === 'object' && 'error_code' in responseData
+        ? String(responseData.error_code || '')
+        : undefined
+    );
+    if (
+      status === 403 &&
+      approvalCode?.startsWith('TEACHER_APPROVAL_') &&
+      !originalRequest?.url?.includes('/api/auth/login')
+    ) {
+      clearTokens();
+      redirectToLogin();
+    }
     const isAccountCredentialCheck =
       originalRequest?.url === '/api/parents/me' &&
       ['patch', 'delete'].includes(

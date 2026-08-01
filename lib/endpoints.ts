@@ -1,10 +1,12 @@
 import api from '@/lib/api';
-import { ReadingLevel } from '@/lib/types';
+import { ParentRegistrationPayload, ReadingLevel, TeacherApprovalStatus } from '@/lib/types';
 
 // ---- Auth ----
 export const authApi = {
-  register: (payload: { name: string; email: string; password: string }) =>
-    api.post('/api/auth/register', payload),
+  register: (payload: ParentRegistrationPayload | FormData) =>
+    api.post('/api/auth/register', payload, payload instanceof FormData
+      ? { headers: { 'Content-Type': 'multipart/form-data' } }
+      : undefined),
   login: (payload: { email: string; password: string }) => api.post('/api/auth/login', payload),
   logout: (refreshToken?: string | null) =>
     api.post('/api/auth/logout', {
@@ -61,6 +63,13 @@ export const booksApi = {
   get: (id: number | string) => api.get(`/api/books/${id}`),
   download: (id: number | string) => api.get(`/api/books/${id}/download`),
   miniGames: (id: number | string) => api.get(`/api/books/${id}/mini-games`),
+  recordView: (id: number | string) => api.post(`/api/books/${id}/views`, {}),
+  engagement: (id: number | string, childId?: number | string) =>
+    api.get(`/api/books/${id}/engagement`, { params: childId ? { child_id: childId } : {} }),
+  like: (id: number | string, childId: number | string) =>
+    api.put(`/api/books/${id}/likes/${childId}`, {}),
+  unlike: (id: number | string, childId: number | string) =>
+    api.delete(`/api/books/${id}/likes/${childId}`),
 };
 
 // ---- Mini-games ----
@@ -133,12 +142,19 @@ export const adminApi = {
   unbanParent: (id: number | string) => api.patch(`/api/admin/parents/${id}/unban`),
   deleteParent: (id: number | string) => api.delete(`/api/admin/parents/${id}`),
 
-  listTeachers: () => api.get('/api/admin/teachers'),
+  listTeachers: (status?: TeacherApprovalStatus) =>
+    api.get('/api/admin/teachers', { params: status ? { status } : {} }),
+  getTeacher: (id: number | string) => api.get(`/api/admin/teachers/${id}`),
   createTeacher: (payload: { name: string; email: string; password: string }) =>
     api.post('/api/admin/teachers', payload),
   banTeacher: (id: number | string) => api.patch(`/api/admin/teachers/${id}/ban`),
   unbanTeacher: (id: number | string) => api.patch(`/api/admin/teachers/${id}/unban`),
   deleteTeacher: (id: number | string) => api.delete(`/api/admin/teachers/${id}`),
+  approveTeacher: (id: number | string) => api.patch(`/api/admin/teachers/${id}/approve`, {}),
+  rejectTeacher: (id: number | string, reason?: string) =>
+    api.patch(`/api/admin/teachers/${id}/reject`, { ...(reason ? { reason } : {}) }),
+  bookAnalytics: (params: { search?: string; sort?: 'views' | 'reads' | 'likes'; page?: number } = {}) =>
+    api.get('/api/admin/book-analytics', { params }),
 
   createAdmin: (payload: { name: string; email: string; password: string }) =>
     api.post('/api/admin/admins', payload),

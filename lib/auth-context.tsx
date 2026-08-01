@@ -4,7 +4,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useState 
 import { useRouter } from 'next/navigation';
 import { authApi, accountApi } from '@/lib/endpoints';
 import { setTokens, clearTokens, getAccessToken, getRefreshToken } from '@/lib/api';
-import { Account, Role } from '@/lib/types';
+import { Account, ParentRegistrationPayload, RegistrationResponse, Role } from '@/lib/types';
 
 interface AuthContextValue {
   account: Account | null;
@@ -15,7 +15,7 @@ interface AuthContextValue {
   isTeacher: boolean;
   isParent: boolean;
   login: (payload: { email: string; password: string }) => Promise<Account>;
-  register: (payload: { name: string; email: string; password: string }) => Promise<Account>;
+  register: (payload: ParentRegistrationPayload | FormData) => Promise<RegistrationResponse>;
   logout: () => Promise<void>;
   refreshAccount: () => Promise<Account>;
 }
@@ -56,13 +56,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.data.parent as Account;
   }, []);
 
-  const register = useCallback(
-    async ({ name, email, password }: { name: string; email: string; password: string }) => {
-      const res = await authApi.register({ name, email, password });
-      return res.data.parent as Account;
-    },
-    []
-  );
+  const register = useCallback(async (payload: ParentRegistrationPayload | FormData) => {
+    const res = await authApi.register(payload);
+    return res.data as RegistrationResponse;
+  }, []);
 
   const logout = useCallback(async () => {
     try {
