@@ -159,8 +159,8 @@ export const adminApi = {
   listTeachers: (status?: TeacherApprovalStatus) =>
     api.get('/api/admin/teachers', { params: status ? { status } : {} }),
   getTeacher: (id: number | string) => api.get(`/api/admin/teachers/${id}`),
-  createTeacher: (payload: { name: string; email: string; password: string }) =>
-    api.post('/api/admin/teachers', payload),
+  createTeacher: (payload: FormData) =>
+    api.post('/api/admin/teachers', payload, { headers: { 'Content-Type': 'multipart/form-data' } }),
   banTeacher: (id: number | string) => api.patch(`/api/admin/teachers/${id}/ban`),
   unbanTeacher: (id: number | string) => api.patch(`/api/admin/teachers/${id}/unban`),
   deleteTeacher: (id: number | string) => api.delete(`/api/admin/teachers/${id}`),

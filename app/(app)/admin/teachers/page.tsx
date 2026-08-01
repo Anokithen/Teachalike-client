@@ -4,7 +4,8 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { GraduationCap, UserRoundSearch } from 'lucide-react';
 import { adminApi } from '@/lib/endpoints';
-import { ApiErrorShape, TeacherApplication, TeacherApprovalStatus } from '@/lib/types';
+import { ApiErrorShape, TeacherApplication, TeacherApprovalStatus, TeacherType } from '@/lib/types';
+import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
 import { Table } from '@/components/ui/Table';
@@ -12,7 +13,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Input, Textarea } from '@/components/ui/Input';
+import { Input, Select, Textarea } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Spinner } from '@/components/ui/Spinner';
@@ -20,6 +21,30 @@ import { Spinner } from '@/components/ui/Spinner';
 const FILTERS: TeacherApprovalStatus[] = ['pending', 'approved', 'rejected'];
 const statusTone = (status: TeacherApprovalStatus) => status === 'approved' ? 'success' : status === 'pending' ? 'warning' : 'danger';
 const teacherTypeLabel = (value: TeacherApplication['teacher_type']) => value === 'private_tuition' ? 'Private tuition teacher' : value === 'school' ? 'School teacher' : 'Not supplied';
+
+interface CreateTeacherForm {
+  name: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  address: string;
+  teacherType: TeacherType;
+  schoolName: string;
+  tuitionName: string;
+  professionalPhoto: File | null;
+}
+
+const EMPTY_CREATE_FORM: CreateTeacherForm = {
+  name: '',
+  email: '',
+  password: '',
+  phoneNumber: '',
+  address: '',
+  teacherType: 'school',
+  schoolName: '',
+  tuitionName: '',
+  professionalPhoto: null,
+};
 
 export default function AdminTeachersPage() {
   const [status, setStatus] = useState<TeacherApprovalStatus>('pending');
@@ -31,7 +56,8 @@ export default function AdminTeachersPage() {
   const [deleting, setDeleting] = useState<TeacherApplication | null>(null);
   const [reason, setReason] = useState('');
   const [rowLoading, setRowLoading] = useState<number | null>(null);
-  const [createForm, setCreateForm] = useState({ name: '', email: '', password: '' });
+  const [createForm, setCreateForm] = useState<CreateTeacherForm>(EMPTY_CREATE_FORM);
+  const [photoInputKey, setPhotoInputKey] = useState(0);
   const [creating, setCreating] = useState(false);
 
   const load = useCallback(async () => {
@@ -65,16 +91,46 @@ export default function AdminTeachersPage() {
 
   async function createTeacher(event: FormEvent) {
     event.preventDefault();
-    setCreating(true);
     setError(null);
+    if (!createForm.professionalPhoto) {
+      setError('A professional profile photo is required.');
+      return;
+    }
+    if (!isAllowedUploadFile(createForm.professionalPhoto, 'image')) {
+      setError(uploadFormatError('image'));
+      return;
+    }
+    if (createForm.professionalPhoto.size > 10 * 1024 * 1024) {
+      setError('The professional photo must be 10 MB or smaller.');
+      return;
+    }
+
+    const payload = new FormData();
+    payload.set('name', createForm.name);
+    payload.set('email', createForm.email);
+    payload.set('password', createForm.password);
+    payload.set('phone_number', createForm.phoneNumber);
+    payload.set('address', createForm.address);
+    payload.set('teacher_type', createForm.teacherType);
+    if (createForm.teacherType === 'school' && createForm.schoolName.trim()) {
+      payload.set('school_name', createForm.schoolName);
+    }
+    if (createForm.teacherType === 'private_tuition' && createForm.tuitionName.trim()) {
+      payload.set('tuition_name', createForm.tuitionName);
+    }
+    payload.set('professional_photo', createForm.professionalPhoto);
+
+    setCreating(true);
     try {
-      await adminApi.createTeacher(createForm);
-      setCreateForm({ name: '', email: '', password: '' });
+      await adminApi.createTeacher(payload);
+      setCreateForm(EMPTY_CREATE_FORM);
+      setPhotoInputKey((key) => key + 1);
       setStatus('approved');
       setSuccess('Approved teacher account created successfully.');
       if (status === 'approved') await load();
     } catch (err) {
-      setError((err as ApiErrorShape).message);
+      const apiError = err as ApiErrorShape;
+      setError(apiError.fields?.length ? apiError.fields.join(' ') : apiError.message);
     } finally {
       setCreating(false);
     }
@@ -116,7 +172,7 @@ export default function AdminTeachersPage() {
       {success && <div className="mb-4"><Alert tone="success">{success}</Alert></div>}
       {error && <div className="mb-4"><Alert>{error}</Alert></div>}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_400px]">
         <section aria-label={`${status} teacher applications`}>
           {!teachers && !error && <div className="flex justify-center py-16"><Spinner size={28} /></div>}
           {teachers?.length === 0 && <EmptyState title={`No ${status} teacher applications`} description="Applications will appear here when their status matches this filter." />}
@@ -138,11 +194,24 @@ export default function AdminTeachersPage() {
 
         <Card className="h-fit">
           <h2 className="mb-1 font-semibold text-brand-900">Create approved teacher</h2>
-          <p className="mb-4 text-xs text-muted">Admin-created teachers are approved immediately.</p>
+          <p className="mb-4 text-xs text-muted">Enter the same complete profile required during teacher signup. Admin-created teachers are approved immediately.</p>
           <form onSubmit={createTeacher} className="space-y-4">
-            <Input label="Name" required maxLength={120} value={createForm.name} onChange={(event) => setCreateForm({ ...createForm, name: event.target.value })} />
-            <Input label="Email" type="email" required maxLength={120} value={createForm.email} onChange={(event) => setCreateForm({ ...createForm, email: event.target.value })} />
-            <Input label="Password" type="password" required minLength={8} maxLength={128} value={createForm.password} onChange={(event) => setCreateForm({ ...createForm, password: event.target.value })} />
+            <Input label="Name" name="create_teacher_name" autoComplete="name" required maxLength={120} value={createForm.name} onChange={(event) => setCreateForm({ ...createForm, name: event.target.value })} />
+            <Input label="Email" name="create_teacher_email" type="email" autoComplete="email" required maxLength={120} value={createForm.email} onChange={(event) => setCreateForm({ ...createForm, email: event.target.value })} />
+            <Input label="Password" name="create_teacher_password" type="password" autoComplete="new-password" required minLength={8} maxLength={128} value={createForm.password} onChange={(event) => setCreateForm({ ...createForm, password: event.target.value })} />
+            <Input label="Phone number" name="create_teacher_phone" type="tel" autoComplete="tel" required maxLength={40} value={createForm.phoneNumber} onChange={(event) => setCreateForm({ ...createForm, phoneNumber: event.target.value })} />
+            <Textarea label="Address" name="create_teacher_address" autoComplete="street-address" required maxLength={500} value={createForm.address} onChange={(event) => setCreateForm({ ...createForm, address: event.target.value })} />
+            <Select label="Teacher type" name="create_teacher_type" required value={createForm.teacherType} onChange={(event) => setCreateForm({ ...createForm, teacherType: event.target.value as TeacherType })}>
+              <option value="school">School teacher</option>
+              <option value="private_tuition">Private tuition teacher</option>
+            </Select>
+            {createForm.teacherType === 'school' ? (
+              <Input label="School name (optional)" name="create_teacher_school" maxLength={200} value={createForm.schoolName} onChange={(event) => setCreateForm({ ...createForm, schoolName: event.target.value })} />
+            ) : (
+              <Input label="Tuition name (optional)" name="create_teacher_tuition" maxLength={200} value={createForm.tuitionName} onChange={(event) => setCreateForm({ ...createForm, tuitionName: event.target.value })} />
+            )}
+            <Input key={photoInputKey} label="Professional profile photo" name="create_teacher_photo" type="file" required accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => setCreateForm({ ...createForm, professionalPhoto: event.target.files?.[0] || null })} aria-describedby="admin-professional-photo-help" />
+            <p id="admin-professional-photo-help" className="text-xs text-muted">JPG, PNG or WebP, up to 10 MB. This becomes the teacher&apos;s profile picture.</p>
             <Button type="submit" loading={creating} className="w-full">Create teacher</Button>
           </form>
         </Card>
