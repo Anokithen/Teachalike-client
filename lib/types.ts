@@ -70,6 +70,7 @@ export interface Child {
 export interface Book {
   id: number;
   title: string;
+  description?: string | null;
   age_group: string;
   reading_level: ReadingLevel;
   text_content?: string;
@@ -77,6 +78,10 @@ export interface Book {
   cover_image_url?: string;
   image_urls?: string[];
   video_url?: string;
+  created_at?: string;
+  updated_at?: string;
+  created_by?: { account_id: number | null; name: string; role: 'teacher' } | null;
+  created_by_label?: string;
 }
 
 export interface MiniGame {
@@ -189,6 +194,14 @@ export interface BookAnalytics extends BookEngagement {
   age_group: string;
   reading_level: ReadingLevel;
   cover_image_url?: string;
+  created_by?: Book['created_by'];
+  created_by_label?: string;
+}
+
+export interface TeacherBook extends Book {
+  total_views: number;
+  total_reads: number;
+  likes: number;
 }
 
 export interface AiModel {

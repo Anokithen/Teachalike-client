@@ -72,6 +72,20 @@ export const booksApi = {
     api.delete(`/api/books/${id}/likes/${childId}`),
 };
 
+export const teacherBooksApi = {
+  list: () => api.get('/api/teacher/books'),
+  get: (id: number | string) => api.get(`/api/teacher/books/${id}`),
+  create: (payload: FormData, idempotencyKey: string) => api.post('/api/books', payload, {
+    headers: { 'Content-Type': 'multipart/form-data', 'Idempotency-Key': idempotencyKey },
+    timeout: 0,
+  }),
+  update: (id: number | string, payload: FormData) => api.patch(`/api/teacher/books/${id}`, payload, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 0,
+  }),
+  remove: (id: number | string) => api.delete(`/api/teacher/books/${id}`),
+};
+
 // ---- Mini-games ----
 export const miniGamesApi = {
   get: (id: number | string) => api.get(`/api/mini-games/${id}`),
@@ -160,6 +174,7 @@ export const adminApi = {
     api.post('/api/admin/admins', payload),
   createBook: (payload: {
     title: string;
+    description?: string;
     age_group: string;
     reading_level: 'beginner' | 'intermediate' | 'advanced';
     text_content?: string;
@@ -170,6 +185,7 @@ export const adminApi = {
   }) => api.post('/api/admin/books', payload),
   updateBook: (id: number | string, payload: {
     title: string;
+    description?: string;
     age_group: string;
     reading_level: 'beginner' | 'intermediate' | 'advanced';
     text_content?: string;
