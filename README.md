@@ -28,6 +28,26 @@ The admin sidebar's **Book views** item opens `/admin/book-views`, which provide
 responsive search/sort/pagination analytics for total and unique views, reads,
 completed reads, unique readers, and child likes. It shows aggregate data only.
 
+Approved teachers have a guarded book studio at `/teacher/books`, with create
+and edit routes under `/teacher/books/create` and
+`/teacher/books/<book_id>/edit`. The responsive form uses the existing inputs,
+cards, alerts, loading buttons, and neumorphic styling. It supports story text,
+descriptions, URLs, cover/illustration/video previews, and sends media directly
+to the authenticated server-owned upload workflow. A per-submission
+`Idempotency-Key` prevents accidental double clicks from creating another book.
+
+The **My books** page only requests books owned by the signed-in teacher and
+shows aggregate views, reads, and child likes—never individual child activity.
+Edit and delete actions are checked again by the API; opening another teacher's
+edit URL cannot grant access. Admins continue managing every book through the
+existing controls.
+
+`BookAttribution` renders the API's safe `created_by_label` consistently in the
+gallery, book details, reading session, teacher library, dashboard, and admin
+analytics. Teacher-created books show `Created by <Teacher Name>`; legacy and
+system books show `Created by TeachAlike`. No teacher contact or workplace data
+is included in the book type or rendered response.
+
 Related API calls live in `lib/endpoints.ts`; shared teacher and engagement
 types live in `lib/types.ts`. No new frontend environment variables are needed.
 After setting the existing `NEXT_PUBLIC_API_URL`, verify changes with:
@@ -93,7 +113,7 @@ increment `CACHE_VERSION` in `public/sw.js`.
   login/register/logout, and role helpers (`isAdmin`, `isTeacher`, `isParent`).
 - `lib/endpoints.ts` — thin per-resource wrapper functions over every endpoint in the spec.
 - `components/layout/AuthGuard.tsx` — redirects unauthenticated users to `/login`; gates
-  `/admin/*` behind `role === "admin"`.
+  `/admin/*` behind `role === "admin"` and `/teacher/*` behind the teacher role.
 - `app/(app)/layout.tsx` — the sidebar + topbar shell for all authenticated routes; the
   sidebar becomes a slide-in drawer on small screens.
 - Every route from the spec's route map is implemented under `app/`, including the
