@@ -51,15 +51,6 @@ export default function NewBookPage() {
     return () => { mounted = false; };
   }, []);
 
-  async function uploadMedia(file: File, mediaType: 'image' | 'video') {
-    if (!isAllowedUploadFile(file, mediaType)) throw new Error(uploadFormatError(mediaType));
-    const media = new FormData();
-    media.append('file', file);
-    media.append('media_type', mediaType);
-    const response = await adminApi.uploadBookMedia(media);
-    return response.data.url as string;
-  }
-
   function onMediaFileChange(file: File | undefined, mediaType: 'image' | 'video', setFile: (value: File | null) => void, input: HTMLInputElement) {
     setError(null);
     if (!file) return setFile(null);
@@ -127,31 +118,32 @@ export default function NewBookPage() {
     setLoading(true);
     let savedBookId: number | null = null;
     try {
-      // Upload each asset in sequence. Cloudinary and the API endpoint each
-      // receive one file per request, and sequential uploads avoid making all
-      // selected illustrations compete for the same connection at once.
-      let cover_image_url = form.cover_image_url;
-      if (coverFile) {
-        setUploadStatus('Uploading cover image…');
-        cover_image_url = await uploadMedia(coverFile, 'image');
-      }
-
-      const image_urls: string[] = [];
-      for (const [index, file] of illustrationFiles.entries()) {
-        setUploadStatus(`Uploading illustration ${index + 1} of ${illustrationFiles.length}…`);
-        image_urls.push(await uploadMedia(file, 'image'));
-      }
-
       setUploadStatus('Saving book and creating games…');
       const res = await adminApi.createBook({
         ...form,
-        cover_image_url,
-        image_urls,
+        cover_image_url: coverFile ? '' : form.cover_image_url,
+        image_urls: [],
         video_url: videoFile ? '' : form.video_url,
       });
       const bookId = res.data.book.id as number;
       savedBookId = bookId;
       setCreatedBookId(bookId);
+
+      if (coverFile) {
+        setUploadStatus('Uploading cover image…');
+        const media = new FormData();
+        media.append('file', coverFile);
+        media.append('image_kind', 'cover');
+        await adminApi.uploadBookImage(bookId, media);
+      }
+      for (const [index, file] of illustrationFiles.entries()) {
+        setUploadStatus(`Uploading illustration ${index + 1} of ${illustrationFiles.length}…`);
+        const media = new FormData();
+        media.append('file', file);
+        media.append('image_kind', 'picture');
+        media.append('position', String(index + 1));
+        await adminApi.uploadBookImage(bookId, media);
+      }
 
       if (videoFile) {
         setUploadStatus('Uploading video…');

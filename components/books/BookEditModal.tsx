@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
-import { adminApi } from '@/lib/endpoints';
+import { adminApi, booksApi } from '@/lib/endpoints';
 import { ApiErrorShape, Book, ReadingLevel } from '@/lib/types';
 import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
 
@@ -86,14 +86,6 @@ export function BookEditModal({ book, open, onClose, onUpdated }: BookEditModalP
         setSaving(false);
         return;
       }
-      for (const [index, file] of illustrationFiles.entries()) {
-        setUploadStatus(`Uploading illustration ${index + 1} of ${illustrationFiles.length}…`);
-        const media = new FormData();
-        media.append('file', file);
-        media.append('media_type', 'image');
-        const uploadResponse = await adminApi.uploadBookMedia(media);
-        imageUrls.push(uploadResponse.data.url as string);
-      }
       const response = await adminApi.updateBook(book.id, {
         title: form.title.trim(),
         description: form.description.trim(),
@@ -105,7 +97,19 @@ export function BookEditModal({ book, open, onClose, onUpdated }: BookEditModalP
         image_urls: imageUrls,
         video_url: form.video_url.trim(),
       });
-      onUpdated(response.data.book as Book);
+      let updatedBook = response.data.book as Book;
+      for (const [index, file] of illustrationFiles.entries()) {
+        setUploadStatus(`Uploading illustration ${index + 1} of ${illustrationFiles.length}…`);
+        const media = new FormData();
+        media.append('file', file);
+        media.append('image_kind', 'picture');
+        media.append('position', String(imageUrls.length + index + 1));
+        await adminApi.uploadBookImage(book.id, media);
+      }
+      if (illustrationFiles.length) {
+        updatedBook = (await booksApi.get(book.id)).data.book as Book;
+      }
+      onUpdated(updatedBook);
       setIllustrationFiles([]);
       setMediaInputKey((value) => value + 1);
       onClose();
