@@ -95,9 +95,11 @@ export default function AdminTeachersPage() {
     setDeleting(null);
   }
 
+  const openApplication = (teacher: TeacherApplication) => setSelected(teacher);
+
   const actions = (teacher: TeacherApplication) => (
     <div className="flex flex-wrap justify-end gap-2">
-      <Button variant="ghost" onClick={() => setSelected(teacher)}><UserRoundSearch className="h-4 w-4" aria-hidden="true" />Details</Button>
+      <Button variant="ghost" onClick={() => openApplication(teacher)}><UserRoundSearch className="h-4 w-4" aria-hidden="true" />Details</Button>
       {teacher.approval_status !== 'approved' && <Button variant="secondary" loading={rowLoading === teacher.id} onClick={() => runAction(teacher, () => adminApi.approveTeacher(teacher.id), `${teacher.name} was approved.`)}>Approve</Button>}
       {teacher.approval_status !== 'rejected' && <Button variant="ghost" className="text-danger" onClick={() => { setRejecting(teacher); setReason(''); }}>Reject</Button>}
       <Button variant="ghost" loading={rowLoading === teacher.id} onClick={() => runAction(teacher, () => teacher.is_banned ? adminApi.unbanTeacher(teacher.id) : adminApi.banTeacher(teacher.id), `${teacher.name} was ${teacher.is_banned ? 'unbanned' : 'banned'}.`)}>{teacher.is_banned ? 'Unban' : 'Ban'}</Button>
@@ -122,7 +124,7 @@ export default function AdminTeachersPage() {
             <div className="hidden md:block">
               <Table columns={['Teacher', 'Type', 'Applied', 'Status', 'Actions']}>
                 {teachers.map((teacher) => <tr key={teacher.id}>
-                  <td className="px-4 py-3"><div className="flex items-center gap-3">{teacher.profile_image_url ? <img src={teacher.profile_image_url} alt="" className="h-11 w-11 rounded-full object-cover" /> : <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-400/10"><GraduationCap className="h-5 w-5 text-brand-600" /></span>}<div><p className="font-semibold text-brand-900">{teacher.name}</p><p className="text-xs text-muted">{teacher.email}</p></div></div></td>
+                  <td className="px-4 py-3"><div className="flex items-center gap-3">{teacher.profile_image_url ? <img src={teacher.profile_image_url} alt="" className="h-11 w-11 rounded-full object-cover" /> : <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-400/10"><GraduationCap className="h-5 w-5 text-brand-600" /></span>}<div><button type="button" className="text-left font-semibold text-brand-900 underline-offset-4 hover:text-brand-600 hover:underline focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400" onClick={() => openApplication(teacher)} aria-label={`View ${teacher.name}'s teacher application`}>{teacher.name}</button><p className="text-xs text-muted">{teacher.email}</p></div></div></td>
                   <td className="px-4 py-3 text-muted">{teacherTypeLabel(teacher.teacher_type)}</td>
                   <td className="px-4 py-3 text-muted">{new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(teacher.created_at))}</td>
                   <td className="px-4 py-3"><div className="space-y-1"><Badge tone={statusTone(teacher.approval_status)} className="capitalize">{teacher.approval_status}</Badge>{teacher.is_banned && <div><Badge tone="danger">Banned</Badge></div>}</div></td>
@@ -130,7 +132,7 @@ export default function AdminTeachersPage() {
                 </tr>)}
               </Table>
             </div>
-            <div className="grid gap-4 md:hidden">{teachers.map((teacher) => <Card key={teacher.id}><div className="flex gap-3">{teacher.profile_image_url && <img src={teacher.profile_image_url} alt="" className="h-14 w-14 rounded-full object-cover" />}<div className="min-w-0"><h2 className="truncate font-semibold text-brand-900">{teacher.name}</h2><p className="break-all text-sm text-muted">{teacher.email}</p><Badge tone={statusTone(teacher.approval_status)} className="mt-2 capitalize">{teacher.approval_status}</Badge></div></div><div className="mt-4">{actions(teacher)}</div></Card>)}</div>
+            <div className="grid gap-4 md:hidden">{teachers.map((teacher) => <Card key={teacher.id}><div className="flex gap-3">{teacher.profile_image_url && <img src={teacher.profile_image_url} alt="" className="h-14 w-14 rounded-full object-cover" />}<div className="min-w-0"><button type="button" className="block max-w-full truncate text-left font-semibold text-brand-900 underline-offset-4 hover:text-brand-600 hover:underline focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400" onClick={() => openApplication(teacher)} aria-label={`View ${teacher.name}'s teacher application`}>{teacher.name}</button><p className="break-all text-sm text-muted">{teacher.email}</p><Badge tone={statusTone(teacher.approval_status)} className="mt-2 capitalize">{teacher.approval_status}</Badge></div></div><div className="mt-4">{actions(teacher)}</div></Card>)}</div>
           </>}
         </section>
 
@@ -146,7 +148,13 @@ export default function AdminTeachersPage() {
         </Card>
       </div>
 
-      <TeacherDetails teacher={selected} onClose={() => setSelected(null)} />
+      <TeacherDetails
+        teacher={selected}
+        loading={rowLoading === selected?.id}
+        onClose={() => setSelected(null)}
+        onApprove={(teacher) => runAction(teacher, () => adminApi.approveTeacher(teacher.id), `${teacher.name} was approved.`)}
+        onReject={(teacher) => { setRejecting(teacher); setReason(''); }}
+      />
       <Modal open={Boolean(rejecting)} onClose={() => setRejecting(null)} title={`Reject ${rejecting?.name || 'teacher'}?`} dismissible={rowLoading === null} footer={<><Button variant="ghost" disabled={rowLoading !== null} onClick={() => setRejecting(null)}>Cancel</Button><Button variant="danger" loading={rowLoading === rejecting?.id} onClick={confirmReject}>Reject application</Button></>}>
         <p className="mb-4 text-muted">The teacher will be unable to log in. You may provide a reason they can safely see.</p>
         <Textarea label="Rejection reason (optional)" maxLength={1000} value={reason} onChange={(event) => setReason(event.target.value)} />
@@ -156,7 +164,19 @@ export default function AdminTeachersPage() {
   );
 }
 
-function TeacherDetails({ teacher, onClose }: { teacher: TeacherApplication | null; onClose: () => void }) {
+function TeacherDetails({
+  teacher,
+  loading,
+  onClose,
+  onApprove,
+  onReject,
+}: {
+  teacher: TeacherApplication | null;
+  loading: boolean;
+  onClose: () => void;
+  onApprove: (teacher: TeacherApplication) => Promise<void>;
+  onReject: (teacher: TeacherApplication) => void;
+}) {
   if (!teacher) return <Modal open={false} onClose={onClose} />;
   const fields = [
     ['Email', teacher.email], ['Phone number', teacher.phone_number || 'Not supplied'], ['Address', teacher.address || 'Not supplied'],
@@ -165,5 +185,26 @@ function TeacherDetails({ teacher, onClose }: { teacher: TeacherApplication | nu
     ['Review date', teacher.reviewed_at ? new Intl.DateTimeFormat(undefined, { dateStyle: 'long', timeStyle: 'short' }).format(new Date(teacher.reviewed_at)) : 'Not reviewed'],
     ['Rejection reason', teacher.rejection_reason || 'None'],
   ];
-  return <Modal open onClose={onClose} title={teacher.name}>{teacher.profile_image_url && <img src={teacher.profile_image_url} alt={`${teacher.name}'s professional profile`} className="mb-5 h-24 w-24 rounded-3xl object-cover shadow-card" />}<dl className="space-y-3">{fields.map(([label, value]) => <div key={label}><dt className="text-xs font-bold uppercase tracking-wide text-muted">{label}</dt><dd className="mt-1 whitespace-pre-wrap break-words text-brand-900">{value}</dd></div>)}</dl></Modal>;
+  const canApprove = teacher.approval_status !== 'approved';
+  const canReject = teacher.approval_status !== 'rejected';
+  return <Modal
+    open
+    onClose={onClose}
+    title={`${teacher.name}'s application`}
+    dismissible={!loading}
+    footer={<>
+      <Button variant="ghost" disabled={loading} onClick={onClose}>Close</Button>
+      {canReject && <Button variant="danger" disabled={loading} onClick={() => onReject(teacher)}>Reject</Button>}
+      {canApprove && <Button loading={loading} onClick={() => void onApprove(teacher)}>Approve teacher</Button>}
+    </>}
+  >
+    <div className="mb-5 flex items-center gap-4">
+      {teacher.profile_image_url ? <img src={teacher.profile_image_url} alt={`${teacher.name}'s professional profile`} className="h-24 w-24 rounded-3xl object-cover shadow-card" /> : <span className="grid h-24 w-24 place-items-center rounded-3xl bg-brand-400/10"><GraduationCap className="h-10 w-10 text-brand-600" /></span>}
+      <div>
+        <Badge tone={statusTone(teacher.approval_status)} className="capitalize">{teacher.approval_status}</Badge>
+        <p className="mt-2 text-xs text-muted">Submitted teacher registration</p>
+      </div>
+    </div>
+    <dl className="space-y-3">{fields.map(([label, value]) => <div key={label}><dt className="text-xs font-bold uppercase tracking-wide text-muted">{label}</dt><dd className="mt-1 whitespace-pre-wrap break-words text-brand-900">{value}</dd></div>)}</dl>
+  </Modal>;
 }
