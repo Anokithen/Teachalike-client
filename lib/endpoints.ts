@@ -197,8 +197,8 @@ export const adminApi = {
   deleteBook: (id: number | string) => api.delete(`/api/admin/books/${id}`),
   generateBookDraft: (payload: { age_group: string; reading_level: ReadingLevel; idea: string; model?: string }) =>
     api.post('/api/admin/book-draft', payload),
-  uploadBookMedia: (media: FormData) =>
-    api.post('/api/admin/book-media', media, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  uploadBookImage: (bookId: number | string, media: FormData) =>
+    api.post(`/api/admin/books/${bookId}/images`, media, { headers: { 'Content-Type': 'multipart/form-data' } }),
   uploadBookVideo: (bookId: number | string, media: FormData) =>
     api.post(`/api/admin/books/${bookId}/videos`, media, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
