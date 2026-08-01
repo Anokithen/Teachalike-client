@@ -16,7 +16,7 @@ const AGE_GROUPS = ['3-5', '6-8', '9-11', '12+'];
 
 export default function NewBookPage() {
   const [form, setForm] = useState({
-    title: '', age_group: '3-5', reading_level: 'beginner' as ReadingLevel, text_content: '', content_url: '', cover_image_url: '', video_url: '',
+    title: '', description: '', age_group: '3-5', reading_level: 'beginner' as ReadingLevel, text_content: '', content_url: '', cover_image_url: '', video_url: '',
   });
   const [error, setError] = useState<string | string[] | null>(null);
   const [createdBookId, setCreatedBookId] = useState<number | null>(null);
@@ -85,7 +85,7 @@ export default function NewBookPage() {
   }
 
   function resetBookForm() {
-    setForm({ title: '', age_group: '3-5', reading_level: 'beginner', text_content: '', content_url: '', cover_image_url: '', video_url: '' });
+    setForm({ title: '', description: '', age_group: '3-5', reading_level: 'beginner', text_content: '', content_url: '', cover_image_url: '', video_url: '' });
     setCoverFile(null);
     setIllustrationFiles([]);
     setVideoFile(null);
@@ -208,6 +208,7 @@ export default function NewBookPage() {
             </div>
           </div>
           <Input label="Book title" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <Textarea label="Description (optional)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} maxLength={5000} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Select label="Age group" value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })}>
               {AGE_GROUPS.map((age) => <option key={age} value={age}>{age}</option>)}

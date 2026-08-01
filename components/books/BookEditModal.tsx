@@ -18,6 +18,7 @@ interface BookEditModalProps {
 
 interface BookForm {
   title: string;
+  description: string;
   age_group: string;
   reading_level: ReadingLevel;
   text_content: string;
@@ -32,6 +33,7 @@ const MAX_ILLUSTRATIONS = 8;
 function formFromBook(book: Book): BookForm {
   return {
     title: book.title || '',
+    description: book.description || '',
     age_group: book.age_group || '',
     reading_level: book.reading_level || 'beginner',
     text_content: book.text_content || '',
@@ -94,6 +96,7 @@ export function BookEditModal({ book, open, onClose, onUpdated }: BookEditModalP
       }
       const response = await adminApi.updateBook(book.id, {
         title: form.title.trim(),
+        description: form.description.trim(),
         age_group: form.age_group.trim(),
         reading_level: form.reading_level,
         text_content: form.text_content,
@@ -123,6 +126,12 @@ export function BookEditModal({ book, open, onClose, onUpdated }: BookEditModalP
           required
           value={form.title}
           onChange={(event) => setForm({ ...form, title: event.target.value })}
+        />
+        <Textarea
+          label="Description"
+          value={form.description}
+          onChange={(event) => setForm({ ...form, description: event.target.value })}
+          maxLength={5000}
         />
         <Input
           label="Age group"
