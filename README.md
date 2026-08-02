@@ -114,6 +114,32 @@ cp .env.local.example .env.local   # set NEXT_PUBLIC_API_URL to your Flask backe
 npm run dev
 ```
 
+## Generated story mini-games
+
+The existing `/mini-games/[id]` page supports book-generated quiz, word puzzle,
+and easy/medium/hard spelling content. The book page shows preparation,
+fallback, ready, failed, and stale states; administrators and approved owning
+teachers receive a rate-limited **Regenerate questions** action. Children see
+the book cover, progress, difficulty and skill badges, large keyboard-accessible
+answer cards, hints, explanations after grading, earned points, and replay
+controls in the existing responsive neumorphic theme. Motion is restrained and
+disabled by `prefers-reduced-motion`.
+
+Quiz answer keys never arrive with the child-facing game response. The client
+submits typed question IDs, selected option indexes, and hint usage; Flask
+calculates correctness, deductions, score, and leaderboard points. Puzzle and
+spelling responses are graded server-side too. Generated strings render as
+ordinary React text, never unsafe HTML. The UI uses the friendly deterministic
+fallback exactly like provider-generated content and never displays provider
+errors to children.
+
+After the backend migration and deployment, verify this client with:
+
+```bash
+npm run lint
+npm run build
+```
+
 Runs at http://localhost:3000. Point `NEXT_PUBLIC_API_URL` at wherever `core` (the
 Flask backend) is running, e.g. `http://localhost:5000`.
 
