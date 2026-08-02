@@ -15,6 +15,7 @@ import {
   Pencil,
   Play,
   Puzzle,
+  RefreshCw,
   RotateCcw,
   Sparkles,
   Trash2,
@@ -33,7 +34,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ChildPinModal } from '@/components/children/ChildPinModal';
 import { BookEditModal } from '@/components/books/BookEditModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { ApiErrorShape, Book, BookEngagement, BookNarration, Child, MiniGame, VoiceProfile } from '@/lib/types';
+import { ApiErrorShape, Book, BookEngagement, BookNarration, Child, MiniGame, MiniGameGenerationStatusResponse, VoiceProfile } from '@/lib/types';
 import { BookAttribution } from '@/components/books/BookAttribution';
 
 const GAME_DETAILS: Record<string, { icon: LucideIcon; goal: string; description: string }> = {
@@ -49,6 +50,9 @@ export default function BookDetailPage() {
 
   const [book, setBook] = useState<Book | null>(null);
   const [miniGames, setMiniGames] = useState<MiniGame[] | null>(null);
+  const [generationStatus, setGenerationStatus] = useState<MiniGameGenerationStatusResponse | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const [children, setChildren] = useState<Child[] | null>(null);
   const [voiceProfiles, setVoiceProfiles] = useState<VoiceProfile[]>([]);
   const [narrations, setNarrations] = useState<BookNarration[]>([]);
@@ -87,6 +91,12 @@ export default function BookDetailPage() {
         setMiniGames(gamesRes.data.mini_games);
         setChildren(childrenRes.data.children);
         setNarrations(narrationsRes.data.book_narrations);
+        try {
+          const statusRes = await booksApi.miniGameGenerationStatus(id);
+          setGenerationStatus(statusRes.data);
+        } catch {
+          // The games remain playable if the optional manager status is unavailable.
+        }
         if (!viewRequested.current) {
           viewRequested.current = true;
           try { await booksApi.recordView(id); } catch { /* Engagement still loads if view recording is temporarily unavailable. */ }
@@ -107,6 +117,24 @@ export default function BookDetailPage() {
   }, [id]);
 
   useEffect(() => setImageIndex(0), [id]);
+
+  async function regenerateMiniGames() {
+    setRegenerating(true);
+    setGenerationError(null);
+    try {
+      await booksApi.regenerateMiniGames(id);
+      const [gamesRes, statusRes] = await Promise.all([
+        booksApi.miniGames(id),
+        booksApi.miniGameGenerationStatus(id),
+      ]);
+      setMiniGames(gamesRes.data.mini_games);
+      setGenerationStatus(statusRes.data);
+    } catch (err) {
+      setGenerationError((err as ApiErrorShape).message || 'We could not prepare new games just now. Please try again.');
+    } finally {
+      setRegenerating(false);
+    }
+  }
 
   useEffect(() => {
     if (!book) return;
@@ -399,7 +427,22 @@ export default function BookDetailPage() {
       </div>
 
       <div className="mt-8">
-        <h2 className="mb-4 text-sm font-semibold text-brand-900">Linked mini-games</h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-brand-900">Linked mini-games</h2>
+            <p className="mt-1 text-xs text-muted">Story challenges are prepared from this book&apos;s saved text.</p>
+          </div>
+          {generationStatus?.can_regenerate && (
+            <Button variant="secondary" loading={regenerating} onClick={regenerateMiniGames}>
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Regenerate questions
+            </Button>
+          )}
+        </div>
+        {generationError && <div className="mb-4"><Alert>{generationError}</Alert></div>}
+        {generationStatus?.mini_games.some((game) => game.generation_status === 'generating' || game.generation_status === 'pending') && (
+          <div className="mb-4"><Alert>We&apos;re preparing fun story challenges. They will be ready soon.</Alert></div>
+        )}
         {miniGames && miniGames.length === 0 && (
           <EmptyState title="No mini-games linked to this book yet" />
         )}
@@ -407,17 +450,32 @@ export default function BookDetailPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {miniGames.map((g) => {
               const GameIcon = GAME_DETAILS[g.game_type]?.icon || Gamepad2;
-              return (
-                <Link
-                  key={g.id}
-                  href={`/mini-games/${g.id}`}
-                  className="sparkle-book-card card block p-5 transition-all hover:-translate-y-1 hover:shadow-md"
-                >
+              const playable = g.generation_status === 'ready' || g.generation_status === 'fallback' || !g.generation_status;
+              const card = (
+                <>
                   <GameIcon className="mb-3 h-6 w-6 text-brand-600" aria-hidden="true" />
                   <h3 className="text-base font-semibold text-brand-900">{GAME_DETAILS[g.game_type]?.goal || g.game_type?.replace(/_/g, ' ')}</h3>
                   <p className="mt-1 min-h-10 text-sm text-muted">{GAME_DETAILS[g.game_type]?.description || 'Complete the activity to practise this book.'}</p>
-                  <div className="mt-3 flex items-center justify-between"><Badge tone="neutral" className="capitalize">{g.difficulty}</Badge><span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600">Play <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></span></div>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge tone="neutral" className="capitalize">{g.difficulty}</Badge>
+                      {g.generation_status === 'fallback' && <Badge tone="warning">Story game ready</Badge>}
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600">
+                      {playable ? 'Play' : 'Preparing'}
+                      {playable && <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />}
+                    </span>
+                  </div>
+                </>
+              );
+              return playable ? (
+                <Link key={g.id} href={`/mini-games/${g.id}`} className="sparkle-book-card card block p-5 transition-all hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-300">
+                  {card}
                 </Link>
+              ) : (
+                <div key={g.id} className="card block p-5 opacity-80" aria-label={`${GAME_DETAILS[g.game_type]?.goal || g.game_type} is being prepared`}>
+                  {card}
+                </div>
               );
             })}
           </div>
