@@ -23,6 +23,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ApiErrorShape, Book, BookNarration, PronunciationCheck, ReadingSession, SessionFeedback, VoiceProfile } from '@/lib/types';
 import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
 import { BookAttribution } from '@/components/books/BookAttribution';
+import { PronunciationComparison } from '@/components/reading/PronunciationComparison';
+import type { PronunciationAttempt } from '@/lib/types';
 
 export default function ReadingSessionPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +39,8 @@ export default function ReadingSessionPage() {
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const microphoneButtonRef = useRef<HTMLButtonElement | null>(null);
+  const recordingStartedAtRef = useRef(0);
   const [paragraphIndex, setParagraphIndex] = useState(0);
   const [transcript, setTranscript] = useState('');
   const [listening, setListening] = useState(false);
@@ -44,6 +48,7 @@ export default function ReadingSessionPage() {
   const [checking, setChecking] = useState(false);
   const [pronunciationResult, setPronunciationResult] = useState<PronunciationCheck | null>(null);
   const [pronunciationError, setPronunciationError] = useState<string | null>(null);
+  const [pronunciationAttempts, setPronunciationAttempts] = useState<PronunciationAttempt[]>([]);
   const [voiceProfiles, setVoiceProfiles] = useState<VoiceProfile[]>([]);
   const [narrations, setNarrations] = useState<BookNarration[]>([]);
   const [selectedVoiceProfileId, setSelectedVoiceProfileId] = useState('');
@@ -103,13 +108,15 @@ export default function ReadingSessionPage() {
 
   async function load() {
     try {
-      const [sessionRes, feedbackRes] = await Promise.all([
+      const [sessionRes, feedbackRes, attemptsRes] = await Promise.all([
         sessionsApi.get(id),
         sessionsApi.listFeedback(id),
+        sessionsApi.listPronunciationAttempts(id),
       ]);
       const loadedSession = sessionRes.data.reading_session as ReadingSession;
       setSession(loadedSession);
       setFeedback(feedbackRes.data.feedback);
+      setPronunciationAttempts(attemptsRes.data.pronunciation_attempts);
       const bookRes = await booksApi.get(loadedSession.book_id);
       setBook(bookRes.data.book);
       const [profileRes, narrationRes] = await Promise.all([
@@ -189,6 +196,10 @@ export default function ReadingSessionPage() {
         setListening(false);
         const audio = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
         if (!audio.size) return;
+        if (Date.now() - recordingStartedAtRef.current < 750) {
+          setPronunciationError('That recording was a little too short. Take a breath, then read the paragraph again.');
+          return;
+        }
         setTranscribing(true);
         try {
           const form = new FormData();
@@ -211,10 +222,12 @@ export default function ReadingSessionPage() {
       };
       setTranscript('');
       setListening(true);
+      recordingStartedAtRef.current = Date.now();
       recorder.start();
     } catch (err) {
       setListening(false);
-      setPronunciationError(err instanceof Error && err.message ? err.message : 'Microphone access is blocked. Allow microphone access for this site and try again.');
+      const permissionDenied = err instanceof DOMException && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
+      setPronunciationError(permissionDenied ? 'Microphone permission is turned off. Allow microphone access for TeachAlike, then try again.' : err instanceof Error && err.message ? err.message : 'We could not open the microphone. Check it is connected and try again.');
     }
   }
 
@@ -237,6 +250,24 @@ export default function ReadingSessionPage() {
     } finally {
       setChecking(false);
     }
+  }
+
+  function retryParagraph() {
+    setTranscript('');
+    setPronunciationResult(null);
+    setPronunciationError(null);
+    window.requestAnimationFrame(() => {
+      microphoneButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      microphoneButtonRef.current?.focus();
+    });
+  }
+
+  function replayNarration() {
+    if (narrationAudio.current && narrationAudioUrl) {
+      void narrationAudio.current.play();
+      return;
+    }
+    void listenToBook();
   }
 
   if (error) return <Alert>{error}</Alert>;
@@ -374,7 +405,7 @@ export default function ReadingSessionPage() {
                 {paragraphs[paragraphIndex]}
               </p>
               <div className="flex flex-col items-center gap-3 py-2 text-center">
-                <button type="button" aria-label={listening ? 'Stop recording' : 'Start recording'} onClick={listening ? stopListening : startListening} disabled={session.is_complete || transcribing} className={`mic-orb ${listening ? 'is-listening' : ''} disabled:opacity-50`}>
+                <button ref={microphoneButtonRef} type="button" aria-label={listening ? 'Stop recording' : 'Start recording'} onClick={listening ? stopListening : startListening} disabled={session.is_complete || transcribing} className={`mic-orb ${listening ? 'is-listening' : ''} disabled:opacity-50`}>
                   {listening ? (
                     <Square className="h-8 w-8 fill-current" aria-hidden="true" />
                   ) : (
@@ -401,15 +432,28 @@ export default function ReadingSessionPage() {
                   <span className="font-medium">I heard:</span> {transcript}
                 </p>
               )}
-              {pronunciationError && <Alert>{pronunciationError}</Alert>}
-              {pronunciationResult && (
-                <Alert>
-                  {pronunciationResult.message} Match: {pronunciationResult.accuracy}%.
-                </Alert>
+              {pronunciationError && (
+                <div className="space-y-2">
+                  <Alert>{pronunciationError}</Alert>
+                  <Button type="button" variant="secondary" onClick={transcript.trim() ? checkPronunciation : startListening} disabled={session.is_complete || listening || transcribing || checking}>
+                    {transcript.trim() ? 'Try comparison again' : 'Try recording again'}
+                  </Button>
+                </div>
               )}
+              {checking && <div className="neumorphic-inset flex items-center justify-center gap-3 p-4 text-sm font-bold text-brand-700" role="status"><Spinner size={20} />Listening carefully to your words…</div>}
             </div>
           )}
         </Card>
+
+        {pronunciationResult && (
+          <Card className="lg:col-span-2 overflow-hidden">
+            <PronunciationComparison
+              result={pronunciationResult}
+              onRetry={retryParagraph}
+              onReplayParagraph={selectedVoiceProfileId ? replayNarration : undefined}
+            />
+          </Card>
+        )}
 
         <Card>
           <h2 className="mb-1 text-sm font-semibold text-brand-900">Progress log</h2>
@@ -442,6 +486,23 @@ export default function ReadingSessionPage() {
                 </li>
               ))}
             </ol>
+          )}
+          {pronunciationAttempts.length > 0 && (
+            <div className="border-t border-border pt-4">
+              <h3 className="text-sm font-extrabold text-brand-900">Pronunciation attempt history</h3>
+              <p className="mt-1 text-xs text-muted">Newest attempt first. Earlier attempts stay available when you retry.</p>
+              <ol className="mt-3 space-y-2">
+                {pronunciationAttempts.slice(0, 10).map((attempt) => (
+                  <li key={attempt.id} className="rounded-xl bg-brand-400/5 p-3 text-sm">
+                    <div className="flex flex-wrap justify-between gap-2">
+                      <span className="font-bold">Paragraph {attempt.paragraph_index + 1}</span>
+                      <time className="text-xs text-muted" dateTime={attempt.created_at}>{new Date(attempt.created_at).toLocaleString()}</time>
+                    </div>
+                    <p className="mt-1 text-muted">Word match {attempt.text_match_accuracy}% · {attempt.provider_accuracy === null ? 'Provider score unavailable' : `Provider score ${attempt.provider_accuracy}%`} · {attempt.substitution_count + attempt.deletion_count} to practise</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
           )}
         </Card>
 
