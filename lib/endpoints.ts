@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import { ParentRegistrationPayload, ReadingLevel, TeacherApprovalStatus } from '@/lib/types';
+import { ParentRegistrationPayload, QuizAnswerSubmission, ReadingLevel, TeacherApprovalStatus } from '@/lib/types';
 
 // ---- Auth ----
 export const authApi = {
@@ -63,6 +63,10 @@ export const booksApi = {
   get: (id: number | string) => api.get(`/api/books/${id}`),
   download: (id: number | string) => api.get(`/api/books/${id}/download`),
   miniGames: (id: number | string) => api.get(`/api/books/${id}/mini-games`),
+  miniGameGenerationStatus: (id: number | string) =>
+    api.get(`/api/books/${id}/mini-games/generation-status`),
+  regenerateMiniGames: (id: number | string) =>
+    api.post(`/api/books/${id}/mini-games/regenerate`, {}),
   recordView: (id: number | string) => api.post(`/api/books/${id}/views`, {}),
   engagement: (id: number | string, childId?: number | string) =>
     api.get(`/api/books/${id}/engagement`, { params: childId ? { child_id: childId } : {} }),
@@ -89,7 +93,11 @@ export const teacherBooksApi = {
 // ---- Mini-games ----
 export const miniGamesApi = {
   get: (id: number | string) => api.get(`/api/mini-games/${id}`),
-  submitResult: (id: number | string, payload: { child_id: number; score: number }) =>
+  submitResult: (id: number | string, payload: {
+    child_id: number;
+    answers: Array<QuizAnswerSubmission | { word_id: string; response: string }>;
+    difficulty?: 'easy' | 'medium' | 'hard';
+  }) =>
     api.post(`/api/mini-games/${id}/results`, payload),
 };
 

@@ -84,18 +84,112 @@ export interface Book {
   created_by_label?: string;
 }
 
+export type MiniGameType = 'quiz' | 'word_puzzle' | 'spelling';
+export type MiniGameGenerationStatus = 'pending' | 'generating' | 'ready' | 'fallback' | 'failed' | 'stale';
+export type QuizDifficulty = 'easy' | 'medium' | 'hard';
+export type QuizSkill = 'story_comprehension' | 'character' | 'event' | 'sequence' | 'vocabulary' | 'main_idea';
+
+export interface QuizQuestion {
+  id: string;
+  type: 'multiple_choice';
+  question: string;
+  options: [string, string, string, string];
+  correct_option_index: number;
+  hint: string;
+  explanation: string;
+  source_excerpt: string;
+  difficulty: QuizDifficulty;
+  skill: QuizSkill;
+}
+
+export type PublicQuizQuestion = Omit<QuizQuestion, 'correct_option_index' | 'explanation' | 'source_excerpt'>;
+
+export interface QuizAnswerSubmission {
+  question_id: string;
+  selected_option_index: number;
+  hint_used: boolean;
+}
+
+export interface QuizAnswerResult {
+  question_id: string;
+  correct: boolean;
+  correct_option_index?: number;
+  correct_answer?: string;
+  explanation: string;
+}
+
+export interface SpellingWord {
+  id: string;
+  word: string;
+  difficulty: QuizDifficulty;
+  hint: string;
+}
+
+export interface WordPuzzleWord {
+  id: string;
+  scrambled_letters: string[];
+  difficulty: QuizDifficulty;
+  hint: string;
+}
+
+export interface MiniGameRules {
+  points_per_question?: number;
+  hint_points?: number;
+  questions_to_pass?: number;
+  points_per_word?: number;
+  time_limit_seconds?: number;
+  lives?: number;
+  difficulty_groups?: QuizDifficulty[];
+}
+
 export interface MiniGame {
   id: number;
-  game_type: string;
-  difficulty: string;
-  rules?: Record<string, unknown>;
-  content?: Record<string, unknown>;
+  book_id: number;
+  game_type: MiniGameType;
+  difficulty: QuizDifficulty;
+  generation_status: MiniGameGenerationStatus;
+  content_version?: number | null;
+  generated_at?: string | null;
+  rules?: MiniGameRules;
+  content?: {
+    questions?: PublicQuizQuestion[];
+    words?: SpellingWord[] | WordPuzzleWord[];
+  };
+  book?: { id: number; title: string; cover_image_url?: string | null };
 }
 
 export interface GameResult {
   id: number;
   game_id: number;
   score: number;
+  correct_answers?: number | null;
+  total_questions?: number | null;
+  game_content_version?: number | null;
+  points_awarded?: number;
+}
+
+export interface MiniGameResultResponse {
+  message: string;
+  game_result: GameResult;
+  answers: QuizAnswerResult[];
+}
+
+export interface MiniGameGenerationRecord {
+  id: number;
+  game_type: MiniGameType;
+  generation_status: MiniGameGenerationStatus;
+  content_version?: number | null;
+  generated_at?: string | null;
+  generator_provider?: string | null;
+  generator_model?: string | null;
+  generation_error?: string | null;
+  source_content_hash?: string | null;
+}
+
+export interface MiniGameGenerationStatusResponse {
+  book_id: number;
+  can_regenerate: boolean;
+  mini_games: MiniGameGenerationRecord[];
 }
 
 export interface ProgressEntry {
