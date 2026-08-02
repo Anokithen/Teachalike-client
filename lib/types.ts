@@ -118,9 +118,79 @@ export interface ReadingSession {
 export interface PronunciationCheck {
   correct: boolean;
   accuracy: number;
+  provider_accuracy: number | null;
+  text_match_accuracy: number;
   points_awarded: number;
   already_awarded: boolean;
   message: string;
+  feedback?: string | null;
+  scoring_provider: string;
+  scoring_model?: string | null;
+  comparison: PronunciationComparison;
+  attempt_id: number;
+  improvement?: number | null;
+}
+
+export type ComparisonTokenStatus = 'correct' | 'substitution' | 'deletion' | 'insertion';
+
+export interface PronunciationComparisonToken {
+  status: ComparisonTokenStatus;
+  expected: string | null;
+  heard: string | null;
+  paragraph_index: number;
+  sentence_index?: number | null;
+  word_index?: number | null;
+  global_word_index?: number | null;
+  character_start?: number | null;
+  character_end?: number | null;
+  after_word_index?: number | null;
+  before_word_index?: number | null;
+}
+
+export interface PronunciationComparisonSummary {
+  expected_words: number;
+  spoken_words: number;
+  correct_words: number;
+  substitutions: number;
+  skipped_words: number;
+  extra_words: number;
+  words_needing_practice: number;
+}
+
+export interface PronunciationPracticeWord {
+  expected: string;
+  heard: string | null;
+  status: 'substitution' | 'deletion';
+  sentence_number: number;
+  word_number: number;
+  global_word_index: number;
+}
+
+export interface PronunciationComparison {
+  original_text: string;
+  spoken_text: string;
+  summary: PronunciationComparisonSummary;
+  tokens: PronunciationComparisonToken[];
+  practice_words: PronunciationPracticeWord[];
+}
+
+export interface PronunciationAttempt {
+  id: number;
+  reading_session_id: number;
+  paragraph_index: number;
+  original_text: string;
+  spoken_transcript: string;
+  provider_accuracy: number | null;
+  text_match_accuracy: number;
+  correct_word_count: number;
+  substitution_count: number;
+  deletion_count: number;
+  insertion_count: number;
+  comparison: PronunciationComparison;
+  scoring_provider: string;
+  scoring_model?: string | null;
+  points_awarded: number;
+  created_at: string;
 }
 
 export type FeedbackType = 'praise' | 'correction' | 'tip';
