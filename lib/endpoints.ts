@@ -104,6 +104,10 @@ export const sessionsApi = {
     api.post(`/api/reading-sessions/${id}/pronunciation-check`, payload),
   transcribePronunciation: (id: number | string, audio: FormData) =>
     api.post(`/api/reading-sessions/${id}/pronunciation-transcript`, audio, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  listPronunciationAttempts: (id: number | string, paragraphIndex?: number) =>
+    api.get(`/api/reading-sessions/${id}/pronunciation-attempts`, {
+      params: paragraphIndex === undefined ? undefined : { paragraph_index: paragraphIndex },
+    }),
   listFeedback: (id: number | string) => api.get(`/api/reading-sessions/${id}/feedback`),
 };
 
