@@ -3,6 +3,47 @@
 Next.js (App Router) + Tailwind CSS frontend for the TeachAlike Flask backend (`Teach-api`),
 built from `TeachAlike_Frontend_Spec.md`.
 
+## Child-friendly pronunciation comparison
+
+The existing `/reading-sessions/[id]` microphone flow now renders the structured
+comparison returned by `POST /api/reading-sessions/<id>/pronunciation-check`.
+It remains part of the same reading session, narration, feedback, progress-log,
+and leaderboard experience.
+
+The result card uses the existing TeachAlike neumorphic colors, cards, shadows,
+rounded controls, and typography. It provides:
+
+- a circular deterministic word-match score and a separately labelled provider reading score;
+- green `Correct`, orange `Heard differently`, coral `Skipped`, and indigo `Extra word` chips with icons and screen-reader labels;
+- desktop side-by-side **Original paragraph** / **What I heard** panels that stack on phones and tablets;
+- selectable mistake details with one-based `Sentence N · Word N` labels (the API remains zero-based);
+- practice cards, browser speech playback when supported, and paragraph narration replay;
+- a prominent retry action that preserves the paragraph, restores focus to the microphone, and keeps prior attempts;
+- newest-first attempt history and positive-only improvement messages; and
+- friendly recording, provider, permission, unsupported-browser, short-recording, and network states.
+
+The client renders all original/transcript values as ordinary React text—never
+unsafe HTML. Colors are reinforced by labels/icons, touch controls are at least
+44px, focus is visible, completion is announced through an ARIA live region,
+and celebration/recording motion respects `prefers-reduced-motion`.
+
+The comparison reports what ASR detected; it is not a phonetic assessment.
+Microphone noise, accents, and device quality can change a transcript. The UI
+keeps `provider_accuracy` and deterministic `text_match_accuracy` visibly
+separate and shows this limitation beside every result.
+
+Typed contracts are in `lib/types.ts`, API calls (including authenticated
+`GET /api/reading-sessions/<id>/pronunciation-attempts`) are in
+`lib/endpoints.ts`, and the reusable result UI is in
+`components/reading/PronunciationComparison.tsx`.
+
+Verify with:
+
+```bash
+npm run lint
+npm run build
+```
+
 ## Teacher applications and book engagement
 
 The public `/register` route supports parent and teacher account types. Parent
