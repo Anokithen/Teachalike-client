@@ -228,6 +228,28 @@
     @apply inline-flex items-center rounded-full bg-brand-400/15 px-2.5 py-1 text-xs font-medium text-brand-600;
   }
 
+  .comparison-result-header {
+    @apply relative flex flex-col items-center gap-5 overflow-hidden rounded-3xl border border-brand-400/25 p-5 text-center sm:flex-row sm:text-left;
+    background: linear-gradient(135deg, #DFF7FC, #FFFFFF 55%, #FFF2C7);
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,.95), 8px 10px 24px rgba(8,46,114,.08);
+  }
+  .comparison-score {
+    --score: 0deg;
+    @apply grid h-28 w-28 shrink-0 place-content-center rounded-full text-center text-brand-900;
+    background: radial-gradient(circle, #fff 58%, transparent 60%), conic-gradient(#38B77A var(--score), #DCEAF3 0);
+    box-shadow: 6px 7px 16px rgba(2,56,89,.12), -4px -4px 12px rgba(255,255,255,.9);
+  }
+  .comparison-chip {
+    @apply inline-flex min-h-9 items-center gap-1 rounded-xl px-2.5 py-1 text-sm font-extrabold leading-tight;
+    margin-inline: .12rem;
+  }
+  .comparison-correct { color: #14532D; background: #DCFCE7; border: 1px solid #86EFAC; box-shadow: 2px 3px 7px rgba(20,83,45,.12); }
+  .comparison-substitution { color: #7C2D12; background: #FFEDD5; border: 1px solid #FDBA74; box-shadow: 2px 3px 7px rgba(124,45,18,.12); }
+  .comparison-deletion { color: #881337; background: #FFF1F2; border: 2px dashed #FB7185; }
+  .comparison-insertion { color: #3730A3; background: #E0E7FF; border: 1px solid #A5B4FC; box-shadow: 2px 3px 7px rgba(55,48,163,.12); }
+  .comparison-celebration { position: absolute; right: 1rem; top: 1rem; animation: comparison-celebrate .8s ease-out both; }
+  @keyframes comparison-celebrate { 0% { opacity: 0; transform: scale(.4) rotate(-30deg); } 70% { opacity: 1; transform: scale(1.2) rotate(10deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+
   .recording-wave {
     @apply flex h-10 items-center justify-center gap-1;
   }
