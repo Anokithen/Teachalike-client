@@ -7,7 +7,7 @@ interface TableProps {
 
 export function Table({ columns, children }: TableProps) {
   return (
-    <div className="neumorphic-card overflow-x-auto">
+    <div className="neumorphic-card responsive-table overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table">
       <table className="w-full min-w-[560px] text-left text-sm">
         <thead>
           <tr className="border-b border-border bg-bg/60">

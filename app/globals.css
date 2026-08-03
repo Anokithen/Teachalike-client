@@ -41,6 +41,8 @@
   }
 
   img, video, audio, canvas, svg { max-width: 100%; }
+  button, input, select, textarea { max-width: 100%; }
+  p, h1, h2, h3, h4, th, td { overflow-wrap: anywhere; }
   ::selection { background: rgb(84 172 191 / .28); color: #023859; }
   button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
   button, a { touch-action: manipulation; }
@@ -555,6 +557,8 @@
   .leaderboard-hero { background: linear-gradient(135deg, #DFF7FC 0%, #fff 58%, #F1EDFF 100%); }
   .leaderboard-board { background: linear-gradient(180deg, #EAF9FC, #F8FCFE); }
   .leaderboard-table-row { border: 1px solid #DCEAF3; border-radius: 18px; background: #fff; box-shadow: 4px 5px 12px rgba(8,46,114,.06); }
+  .responsive-table { -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+  .responsive-table:focus-visible { outline: 2px solid #54ACBF; outline-offset: 3px; }
 }
 
 /*
@@ -603,4 +607,10 @@
   }
 
   .voice-file-picker { align-items: stretch; }
+  .page-hero > div { min-width: 0; }
+  .page-hero h1 { font-size: clamp(1.5rem, 7vw, 2rem); line-height: 1.15; }
+  .page-hero .btn, .page-hero a.btn-primary, .page-hero a.btn-secondary { width: 100%; }
+  .page-hero .relative.z-10.flex > .max-w-full { flex: 1 1 100%; }
+  .modal-panel { width: 100%; min-width: 0; }
+  .card, .neumorphic-card, .soft-card, .content-panel { min-width: 0; }
 }
