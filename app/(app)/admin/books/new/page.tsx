@@ -22,7 +22,7 @@ export default function NewBookPage() {
   const [createdBookId, setCreatedBookId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [storyIdea, setStoryIdea] = useState('a curious little sea turtle looking for a lost star');
+  const [storyIdea, setStoryIdea] = useState('');
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [illustrationFiles, setIllustrationFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -195,7 +195,7 @@ export default function NewBookPage() {
               </p>
               <Button type="button" variant="secondary" loading={generating} onClick={generateStory}>
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
-                Generate book with Groq
+                Generate book
               </Button>
             </div>
           </div>
