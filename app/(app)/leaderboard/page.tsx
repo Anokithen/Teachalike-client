@@ -126,7 +126,7 @@ export default function LeaderboardPage() {
         </div>
         <form onSubmit={applyWeek} className="flex w-full flex-wrap items-end gap-2 sm:w-auto">
           <Button type="button" variant={week === 'current' ? 'primary' : 'ghost'} onClick={resetWeek}>This Week</Button>
-          <Input label="Custom week" type="date" value={weekInput} onChange={(event) => setWeekInput(event.target.value)} className="min-w-[9.5rem] sm:w-44" />
+          <Input label="Custom week" type="date" value={weekInput} onChange={(event) => setWeekInput(event.target.value)} className="w-full sm:w-44" />
           <Button type="submit" variant="secondary">Apply</Button>
           {week !== 'current' && <Button type="button" variant="ghost" onClick={resetWeek}>Reset</Button>}
         </form>

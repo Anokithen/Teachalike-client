@@ -94,6 +94,7 @@ export function Drawer({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         className="drawer-panel absolute inset-y-0 right-0 flex w-full max-w-xl flex-col border-l border-border bg-surface shadow-2xl motion-safe:animate-[drawer-panel-in_.24s_cubic-bezier(.2,.8,.2,1)]"
+        style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-5 sm:px-7">
           <div>

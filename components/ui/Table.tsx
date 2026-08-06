@@ -3,12 +3,16 @@ import { ReactNode } from 'react';
 interface TableProps {
   columns: string[];
   children?: ReactNode;
+  mobileChildren?: ReactNode;
+  label?: string;
 }
 
-export function Table({ columns, children }: TableProps) {
+export function Table({ columns, children, mobileChildren, label = 'Data table' }: TableProps) {
   return (
-    <div className="neumorphic-card responsive-table overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table">
-      <table className="w-full min-w-[560px] text-left text-sm">
+    <div className="neumorphic-card min-w-0">
+      <div className="hidden min-w-0 md:block">
+        <table className="w-full table-fixed text-left text-sm">
+          <caption className="sr-only">{label}</caption>
         <thead>
           <tr className="border-b border-border bg-bg/60">
             {columns.map((col) => (
@@ -20,6 +24,8 @@ export function Table({ columns, children }: TableProps) {
         </thead>
         <tbody className="divide-y divide-border">{children}</tbody>
       </table>
+      </div>
+      {mobileChildren && <div className="grid gap-3 p-3 md:hidden" aria-label={`${label} mobile view`}>{mobileChildren}</div>}
     </div>
   );
 }

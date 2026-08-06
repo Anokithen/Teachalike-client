@@ -100,7 +100,7 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center p-0 sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-[70] flex items-end justify-center p-0 sm:items-center sm:p-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div
         className="absolute inset-0 bg-brand-900/40 backdrop-blur-sm motion-safe:animate-[modal-backdrop-in_.18s_ease-out]"
         onClick={dismissible ? onClose : undefined}
@@ -111,26 +111,26 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         ref={dialogRef}
-        className="modal-panel card relative max-h-[min(90dvh,44rem)] w-full max-w-md overflow-y-auto rounded-b-none p-5 motion-safe:animate-[modal-card-in_.22s_cubic-bezier(.2,.8,.2,1)] sm:rounded-2xl sm:p-6"
+        className="modal-panel card relative flex max-h-[min(92dvh,44rem)] w-full max-w-md flex-col overflow-hidden rounded-b-none p-0 motion-safe:animate-[modal-card-in_.22s_cubic-bezier(.2,.8,.2,1)] sm:rounded-2xl"
       >
         {dismissible && (
           <button
             type="button"
             ref={closeButtonRef}
             onClick={onClose}
-            className="absolute right-3 top-3 rounded-lg p-2 text-xl leading-none text-muted hover:bg-bg hover:text-brand-900"
+            className="absolute right-3 top-3 z-10 min-h-11 min-w-11 rounded-lg p-2 text-xl leading-none text-muted hover:bg-bg hover:text-brand-900"
             aria-label="Close dialog"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         )}
         {title && (
-          <h2 id={titleId} className={`mb-3 text-lg font-semibold text-brand-900 ${dismissible ? 'pr-8' : ''}`}>
+          <h2 id={titleId} className={`shrink-0 border-b border-border px-5 py-4 text-lg font-semibold text-brand-900 sm:px-6 ${dismissible ? 'pr-16' : ''}`}>
             {title}
           </h2>
         )}
-        <div className="text-sm text-brand-900">{children}</div>
-        {footer && <div className="mt-6 flex flex-col-reverse justify-end gap-3 sm:flex-row">{footer}</div>}
+        <div className="min-h-0 overflow-y-auto px-5 py-5 text-sm text-brand-900 sm:px-6">{children}</div>
+        {footer && <div className="shrink-0 border-t border-border px-5 py-4 sm:px-6"><div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">{footer}</div></div>}
       </div>
     </div>
   );

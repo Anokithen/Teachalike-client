@@ -95,13 +95,31 @@ export function AccountsTable({
         {actionError && <Alert>{actionError}</Alert>}
         {accounts && accounts.length === 0 && <EmptyState title={`No ${label}s yet`} />}
         {accounts && accounts.length > 0 && (
-          <Table columns={['Name', 'Email', 'Children', 'Status', '']}>
+          <Table label={`${label} accounts`} columns={['Name', 'Email', 'Children', 'Status', 'Actions']} mobileChildren={accounts.map((a) => {
+            const isSelf = a.id === me?.id;
+            return (
+              <article key={`mobile-${a.id}`} className="min-w-0 rounded-2xl border border-border bg-bg/35 p-4">
+                <dl className="grid gap-2 text-sm">
+                  <div><dt className="text-xs font-semibold uppercase tracking-wide text-muted">Name</dt><dd className="mt-0.5 break-words font-semibold text-brand-900">{a.name}</dd></div>
+                  <div><dt className="text-xs font-semibold uppercase tracking-wide text-muted">Email</dt><dd className="mt-0.5 break-all text-brand-700">{a.email}</dd></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><dt className="text-xs font-semibold uppercase tracking-wide text-muted">Children</dt><dd className="mt-0.5 text-brand-900">{a.children_count ?? '—'}</dd></div>
+                    <div><dt className="text-xs font-semibold uppercase tracking-wide text-muted">Status</dt><dd className="mt-0.5"><Badge tone={a.is_banned ? 'danger' : 'success'}>{a.is_banned ? 'Banned' : 'Active'}</Badge></dd></div>
+                  </div>
+                </dl>
+                <div className="mt-4 flex flex-wrap gap-2" aria-label={`Actions for ${a.name}`}>
+                  <Button variant="ghost" disabled={isSelf} title={isSelf ? "You can't ban your own account" : undefined} onClick={() => setPendingBan(a)}>{a.is_banned ? 'Unban' : 'Ban'}</Button>
+                  <Button variant="ghost" className="text-danger" disabled={isSelf} title={isSelf ? "You can't delete your own account" : undefined} onClick={() => setPendingDelete(a)}>Delete</Button>
+                </div>
+              </article>
+            );
+          })}>
             {accounts.map((a) => {
               const isSelf = a.id === me?.id;
               return (
                 <tr key={a.id}>
-                  <td className="px-4 py-3 font-medium text-brand-900">{a.name}</td>
-                  <td className="px-4 py-3 text-muted">{a.email}</td>
+                  <td className="max-w-[13rem] break-words px-4 py-3 font-medium text-brand-900">{a.name}</td>
+                  <td className="max-w-[16rem] break-all px-4 py-3 text-muted">{a.email}</td>
                   <td className="px-4 py-3 text-muted">{a.children_count ?? '—'}</td>
                   <td className="px-4 py-3">
                     <Badge tone={a.is_banned ? 'danger' : 'success'}>

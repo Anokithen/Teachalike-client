@@ -93,7 +93,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-            <div className="absolute right-0 z-20 mt-2 w-56 rounded-2xl border border-border bg-surface p-2 shadow-card motion-safe:animate-[fade-slide-in_.15s_ease-out]">
+            <div className="absolute right-0 z-20 mt-2 w-[min(14rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] rounded-2xl border border-border bg-surface p-2 shadow-card motion-safe:animate-[fade-slide-in_.15s_ease-out]">
               <div className="mb-1 border-b border-border px-3 py-2">
                 <p className="truncate text-sm font-semibold text-brand-900">{account?.name || 'My profile'}</p>
                 <p className="mt-0.5 text-xs capitalize text-muted">{account?.role || 'Account'}</p>

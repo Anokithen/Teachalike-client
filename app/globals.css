@@ -5,6 +5,7 @@
 @layer base {
   :root {
     --font-sans: Nunito, ui-rounded, "Avenir Next", system-ui, sans-serif;
+    --font-heading: "Bubblegum Sans", ui-rounded, Nunito, "Avenir Next", system-ui, sans-serif;
     --color-bg: 242 248 252;
     --color-surface: 255 255 255;
     --color-border: 220 234 243;
@@ -32,7 +33,10 @@
     font-size: 16px;
     line-height: 1.5;
     background-image: radial-gradient(circle at 8% 4%, rgba(84, 172, 191, .14), transparent 26rem), radial-gradient(circle at 92% 12%, rgba(145, 89, 245, .08), transparent 24rem), radial-gradient(circle at 50% 100%, rgba(246, 184, 63, .08), transparent 30rem);
-    overflow-x: clip;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
   }
 
   html {
@@ -131,7 +135,7 @@
     @apply btn bg-danger text-white hover:opacity-90;
   }
   .input {
-    @apply w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-brand-900 placeholder:text-muted/70 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40;
+    @apply w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-base text-brand-900 placeholder:text-muted/70 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40 sm:text-sm;
     box-shadow: inset 3px 3px 7px rgba(2, 56, 89, .08), inset -2px -2px 5px rgba(255, 255, 255, .78);
     transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
   }
@@ -297,7 +301,8 @@
     background: linear-gradient(90deg, #E0F7FA, #F3E8FF, #FEF3C7);
   }
 
-  .app-shell { background: #E8F0F5; gap: 16px; padding: 16px; }
+  .app-shell { background: #E8F0F5; gap: 16px; padding: 12px; }
+  @media (min-width: 640px) { .app-shell { padding: 16px; } }
   .dark .app-shell { background: linear-gradient(135deg, #061D2E 0%, #082A40 30%, #0C1D2B 30%, #0C1D2B 100%); }
   .sidebar-kids { background: linear-gradient(165deg, #064B82, #043B6C 60%, #075B91); border: 1px solid rgba(255,255,255,.12); border-radius: 30px; box-shadow: 8px 12px 24px rgba(8,46,114,.16), inset 1px 1px 0 rgba(255,255,255,.12); }
   .sidebar-kids .text-brand-900 { color: white; }
@@ -557,8 +562,6 @@
   .leaderboard-hero { background: linear-gradient(135deg, #DFF7FC 0%, #fff 58%, #F1EDFF 100%); }
   .leaderboard-board { background: linear-gradient(180deg, #EAF9FC, #F8FCFE); }
   .leaderboard-table-row { border: 1px solid #DCEAF3; border-radius: 18px; background: #fff; box-shadow: 4px 5px 12px rgba(8,46,114,.06); }
-  .responsive-table { -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
-  .responsive-table:focus-visible { outline: 2px solid #54ACBF; outline-offset: 3px; }
 }
 
 /*
