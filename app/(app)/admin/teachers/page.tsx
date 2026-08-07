@@ -171,6 +171,7 @@ export default function AdminTeachersPage() {
     <div className="flex flex-wrap justify-end gap-2">
       <Button variant="ghost" onClick={() => openApplication(teacher)}><UserRoundSearch className="h-4 w-4" aria-hidden="true" />Details</Button>
       {teacher.approval_status !== 'approved' && <Button variant="secondary" loading={rowLoading === teacher.id} onClick={() => runAction(teacher, () => adminApi.approveTeacher(teacher.id), `${teacher.name} was approved.`)}>Approve</Button>}
+      {teacher.approval_notification_status === 'failed' && <Button variant="secondary" loading={rowLoading === teacher.id} onClick={() => runAction(teacher, () => adminApi.retryTeacherApprovalEmail(teacher.id), `Approval email retry was queued for ${teacher.name}.`)}>Retry email</Button>}
       {teacher.approval_status !== 'rejected' && <Button variant="ghost" className="text-danger" onClick={() => { setRejecting(teacher); setReason(''); }}>Reject</Button>}
       <Button variant="ghost" loading={rowLoading === teacher.id} onClick={() => runAction(teacher, () => teacher.is_banned ? adminApi.unbanTeacher(teacher.id) : adminApi.banTeacher(teacher.id), `${teacher.name} was ${teacher.is_banned ? 'unbanned' : 'banned'}.`)}>{teacher.is_banned ? 'Unban' : 'Ban'}</Button>
       <Button variant="ghost" className="text-danger" onClick={() => setDeleting(teacher)}>Delete</Button>
@@ -197,12 +198,13 @@ export default function AdminTeachersPage() {
           {teachers?.length === 0 && <EmptyState title={`No ${status} teacher applications`} description="Applications will appear here when their status matches this filter." />}
           {teachers && teachers.length > 0 && <>
             <div className="hidden md:block">
-              <Table columns={['Teacher', 'Type', 'Applied', 'Status', 'Actions']}>
+              <Table columns={['Teacher', 'Type', 'Applied', 'Status', 'Notification', 'Actions']}>
                 {teachers.map((teacher) => <tr key={teacher.id}>
                   <td className="px-4 py-3"><div className="flex items-center gap-3">{teacher.profile_image_url ? <img src={teacher.profile_image_url} alt="" className="h-11 w-11 rounded-full object-cover" /> : <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-400/10"><GraduationCap className="h-5 w-5 text-brand-600" /></span>}<div><button type="button" className="text-left font-semibold text-brand-900 underline-offset-4 hover:text-brand-600 hover:underline focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400" onClick={() => openApplication(teacher)} aria-label={`View ${teacher.name}'s teacher application`}>{teacher.name}</button><p className="text-xs text-muted">{teacher.email}</p></div></div></td>
                   <td className="px-4 py-3 text-muted">{teacherTypeLabel(teacher.teacher_type)}</td>
                   <td className="px-4 py-3 text-muted">{new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(teacher.created_at))}</td>
                   <td className="px-4 py-3"><div className="space-y-1"><Badge tone={statusTone(teacher.approval_status)} className="capitalize">{teacher.approval_status}</Badge>{teacher.is_banned && <div><Badge tone="danger">Banned</Badge></div>}</div></td>
+                  <td className="px-4 py-3 text-muted">{teacher.approval_notification_status ? <Badge tone={teacher.approval_notification_status === 'sent' ? 'success' : teacher.approval_notification_status === 'failed' ? 'danger' : 'warning'} className="capitalize">{teacher.approval_notification_status}</Badge> : 'Not sent'}</td>
                   <td className="px-4 py-3">{actions(teacher)}</td>
                 </tr>)}
               </Table>
@@ -278,6 +280,8 @@ function TeacherDetails({
     ['Teacher type', teacherTypeLabel(teacher.teacher_type)], ['School name', teacher.school_name || 'Not supplied'], ['Tuition name', teacher.tuition_name || 'Not supplied'],
     ['Application date', new Intl.DateTimeFormat(undefined, { dateStyle: 'long', timeStyle: 'short' }).format(new Date(teacher.created_at))],
     ['Review date', teacher.reviewed_at ? new Intl.DateTimeFormat(undefined, { dateStyle: 'long', timeStyle: 'short' }).format(new Date(teacher.reviewed_at)) : 'Not reviewed'],
+    ['Email verified', teacher.email_verified ? 'Verified' : 'Not verified'],
+    ['Approval email', teacher.approval_notification_status || 'Not sent'],
     ['Rejection reason', teacher.rejection_reason || 'None'],
   ];
   const canApprove = teacher.approval_status !== 'approved';

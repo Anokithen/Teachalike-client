@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, GraduationCap, Sparkles, UsersRound } from 'lucide-react';
+import { CheckCircle2, Sparkles } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Logo } from '@/components/layout/Logo';
 import { Input, Select, Textarea } from '@/components/ui/Input';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ApiErrorShape, PublicAccountType, TeacherType } from '@/lib/types';
 import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
+import { GoogleIdentityButton } from '@/components/auth/GoogleIdentityButton';
 
 interface RegisterForm {
   name: string;
@@ -38,11 +39,12 @@ const EMPTY_FORM: RegisterForm = {
 };
 
 export default function RegisterPage() {
-  const { register, login } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const [form, setForm] = useState<RegisterForm>(EMPTY_FORM);
   const [error, setError] = useState<string | string[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [teacherSubmitted, setTeacherSubmitted] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -88,14 +90,13 @@ export default function RegisterPage() {
         return;
       }
 
-      await register({
+      const response = await register({
         account_type: 'parent',
         name: form.name,
         email: form.email,
         password: form.password,
       });
-      await login({ email: form.email, password: form.password });
-      window.location.assign('/dashboard');
+      setVerificationEmail(response.email || form.email);
     } catch (err) {
       const apiError = err as ApiErrorShape;
       setError(apiError.fields?.length ? apiError.fields : apiError.message);
@@ -103,6 +104,40 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  const onGoogleCredential = async (credential: string) => {
+    setError(null);
+    setLoading(true);
+    try {
+      await loginWithGoogle(credential);
+      window.location.assign('/dashboard');
+    } catch (err) {
+      const apiError = err as ApiErrorShape;
+      setError(apiError.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (verificationEmail) {
+    return (
+      <div className="auth-page flex min-h-[100dvh] items-center justify-center bg-bg px-3 py-8 sm:px-4">
+        <div className="w-full max-w-md text-center">
+          <div className="mb-8 flex justify-center"><Logo /></div>
+          <div className="neumorphic-card p-6 sm:p-9" role="status">
+            <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-400/10 text-brand-600">
+              <CheckCircle2 className="h-8 w-8" aria-hidden="true" />
+            </span>
+            <h1 className="mt-5 text-2xl font-semibold text-brand-900">Check your inbox</h1>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              We sent a verification link to {verificationEmail}. Verify your email before signing in.
+            </p>
+            <Link href="/login" className="btn-primary mt-6 inline-flex">Back to login</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (teacherSubmitted) {
     return (
@@ -125,7 +160,7 @@ export default function RegisterPage() {
     );
   }
 
-  const isTeacher = form.accountType === 'teacher';
+  const isTeacher = false;
   return (
     <div className="auth-page flex min-h-[100dvh] items-center justify-center bg-bg px-3 py-8 sm:px-4 sm:py-12">
       <div className={`w-full ${isTeacher ? 'max-w-2xl' : 'max-w-sm'}`}>
@@ -133,34 +168,16 @@ export default function RegisterPage() {
         <div className="neumorphic-card relative overflow-hidden p-5 sm:p-8">
           <Sparkles className="pointer-events-none absolute right-5 top-4 h-5 w-5 text-gold/70" aria-hidden="true" />
           <h1 className="mb-1 text-xl font-semibold text-brand-900">Create your account</h1>
-          <p className="mb-6 text-sm text-muted">Choose how you will use TeachAlike.</p>
+          <p className="mb-6 text-sm text-muted">Create a parent account to start using TeachAlike.</p>
+
+          <GoogleIdentityButton onCredential={onGoogleCredential} disabled={loading} />
+          <div className="flex items-center gap-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted">
+            <span className="h-px flex-1 bg-border" />
+            <span>or continue with email</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
 
           <form onSubmit={onSubmit} className="space-y-5">
-            <fieldset>
-              <legend className="label">Account type</legend>
-              <div className="grid grid-cols-2 gap-3">
-                {([
-                  ['parent', 'Parent', UsersRound],
-                  ['teacher', 'Teacher', GraduationCap],
-                ] as const).map(([value, label, Icon]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setForm({
-                      ...form,
-                      accountType: value,
-                      professionalPhoto: value === 'teacher' ? form.professionalPhoto : null,
-                    })}
-                    aria-pressed={form.accountType === value}
-                    className={`rounded-2xl border p-3 text-left transition ${form.accountType === value ? 'border-brand-400 bg-brand-400/10 text-brand-900 shadow-sm' : 'border-border text-muted hover:border-brand-400/50'}`}
-                  >
-                    <Icon className="mb-2 h-5 w-5 text-brand-600" aria-hidden="true" />
-                    <span className="font-semibold">{label}</span>
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-
             <div className={isTeacher ? 'grid gap-4 sm:grid-cols-2' : 'space-y-4'}>
               <Input label="Name" name="name" autoComplete="name" required maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
               <Input label="Email" type="email" name="email" autoComplete="email" required maxLength={120} value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />

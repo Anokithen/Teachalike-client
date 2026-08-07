@@ -8,6 +8,9 @@ export const authApi = {
       ? { headers: { 'Content-Type': 'multipart/form-data' } }
       : undefined),
   login: (payload: { email: string; password: string }) => api.post('/api/auth/login', payload),
+  google: (payload: { credential: string; nonce?: string }) => api.post('/api/auth/google', payload),
+  verifyEmail: (payload: { token: string }) => api.post('/api/auth/verify-email', payload),
+  resendVerification: (payload: { email: string }) => api.post('/api/auth/resend-verification', payload),
   logout: (refreshToken?: string | null) =>
     api.post('/api/auth/logout', {
       ...(refreshToken ? { refresh_token: refreshToken } : {}),
@@ -177,6 +180,8 @@ export const adminApi = {
   unbanTeacher: (id: number | string) => api.patch(`/api/admin/teachers/${id}/unban`),
   deleteTeacher: (id: number | string) => api.delete(`/api/admin/teachers/${id}`),
   approveTeacher: (id: number | string) => api.patch(`/api/admin/teachers/${id}/approve`, {}),
+  retryTeacherApprovalEmail: (id: number | string) =>
+    api.post(`/api/admin/teachers/${id}/approval-email/retry`, {}),
   rejectTeacher: (id: number | string, reason?: string) =>
     api.patch(`/api/admin/teachers/${id}/reject`, { ...(reason ? { reason } : {}) }),
   bookAnalytics: (params: { search?: string; sort?: 'views' | 'reads' | 'likes'; page?: number } = {}) =>

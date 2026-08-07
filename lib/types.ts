@@ -14,7 +14,15 @@ export interface TeacherProfile {
   approval_status: TeacherApprovalStatus;
   reviewed_by_id: number | null;
   reviewed_at: string | null;
+  approval_version?: number;
   rejection_reason: string | null;
+  approval_notification_status?: 'pending' | 'sending' | 'sent' | 'retry' | 'failed' | 'cancelled' | null;
+  approval_notification?: {
+    status: 'pending' | 'sending' | 'sent' | 'retry' | 'failed' | 'cancelled';
+    attempt_count: number;
+    sent_at: string | null;
+    last_error_code: string | null;
+  } | null;
   created_at: string;
   updated_at: string;
 }
@@ -29,6 +37,10 @@ export interface Account {
   role: Role;
   created_at: string;
   is_banned?: boolean;
+  email_verified?: boolean;
+  email_verified_at?: string | null;
+  auth_provider?: 'password' | 'google' | string;
+  last_login_at?: string | null;
   profile_image_url?: string | null;
   children_count?: number;
   teacher_profile?: TeacherProfile;
@@ -47,6 +59,8 @@ export interface RegistrationResponse {
   message: string;
   parent?: Account;
   teacher?: Account;
+  requires_email_verification?: boolean;
+  email?: string;
 }
 
 export interface ChildStats {

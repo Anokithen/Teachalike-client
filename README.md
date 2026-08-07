@@ -208,3 +208,18 @@ increment `CACHE_VERSION` in `public/sw.js`.
 Colors, spacing, and copy tone follow section 3 of the spec (`brand-900` / `brand-600`
 / `brand-400`, calm sentence-case copy, plain-verb buttons). Tailwind theme tokens live
 in `tailwind.config.ts`.
+# Google Identity Services
+
+Set `NEXT_PUBLIC_GOOGLE_AUTH_CLIENT_ID` to the same Google OAuth Web client ID
+used by the Flask backend `GOOGLE_AUTH_CLIENT_ID`. Add both localhost and the
+deployed frontend origin to Google Cloud Authorized JavaScript origins.
+
+The frontend uses the official Google Identity Services rendered button on
+`/login` and `/register`. It sends only the returned ID credential to
+`POST /api/auth/google`; token verification, account creation/linking, role
+checks, and JWT issuance all happen in Flask.
+
+Password registration now shows a verification-required confirmation instead of
+auto-login. `/verify-email?token=...` posts the token to Flask and displays
+success, expired, or invalid-link states. Use `npm run lint` and `npm run build`
+after changing auth UI.

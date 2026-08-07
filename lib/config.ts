@@ -22,3 +22,4 @@ if (!configuredApiUrl && process.env.NODE_ENV === 'production') {
 export const API_BASE_URL = normalizeApiUrl(
   configuredApiUrl || 'http://localhost:5000',
 );
+export const GOOGLE_AUTH_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_AUTH_CLIENT_ID?.trim() || '';

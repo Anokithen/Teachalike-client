@@ -15,6 +15,7 @@ interface AuthContextValue {
   isTeacher: boolean;
   isParent: boolean;
   login: (payload: { email: string; password: string }) => Promise<Account>;
+  loginWithGoogle: (credential: string) => Promise<Account>;
   register: (payload: ParentRegistrationPayload | FormData) => Promise<RegistrationResponse>;
   logout: () => Promise<void>;
   refreshAccount: () => Promise<Account>;
@@ -56,6 +57,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.data.parent as Account;
   }, []);
 
+  const loginWithGoogle = useCallback(async (credential: string) => {
+    const res = await authApi.google({ credential });
+    setTokens({ access_token: res.data.access_token, refresh_token: res.data.refresh_token });
+    setAccount(res.data.parent);
+    return res.data.parent as Account;
+  }, []);
+
   const register = useCallback(async (payload: ParentRegistrationPayload | FormData) => {
     const res = await authApi.register(payload);
     return res.data as RegistrationResponse;
@@ -87,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isTeacher: account?.role === 'teacher',
     isParent: account?.role === 'parent',
     login,
+    loginWithGoogle,
     register,
     logout,
     refreshAccount,
