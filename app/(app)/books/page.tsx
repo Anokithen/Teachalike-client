@@ -99,7 +99,7 @@ export default function BooksPage() {
                 {book.cover_image_url && (
                   // External admin-provided image URLs cannot be allowlisted at build time for next/image.
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={book.cover_image_url} alt="" className="mb-4 h-32 w-full rounded-xl object-cover" />
+                  <img src={book.cover_image_url} alt="" loading="lazy" decoding="async" className="mb-4 h-32 w-full rounded-xl object-cover" />
                 )}
                 <h3 className="mb-2 text-base font-semibold text-brand-900">{book.title}</h3>
                 <BookAttribution label={book.created_by_label} className="mb-3" />

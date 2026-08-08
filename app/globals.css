@@ -622,6 +622,12 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  .mobile-bottom-nav {
+    padding-bottom: max(.35rem, env(safe-area-inset-bottom));
+    padding-left: max(.5rem, env(safe-area-inset-left));
+    padding-right: max(.5rem, env(safe-area-inset-right));
+  }
+
   .voice-file-picker { align-items: stretch; }
   .page-hero > div { min-width: 0; }
   .page-hero h1 { font-size: clamp(1.5rem, 7vw, 2rem); line-height: 1.15; }

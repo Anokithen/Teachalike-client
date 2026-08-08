@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
 import { PullToRefresh } from '@/components/layout/PullToRefresh';
 import { ActiveChildProvider } from '@/lib/active-child-context';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,9 +22,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <Topbar
               onMenuClick={() => setSidebarOpen(true)}
             />
-            <main className="min-w-0 flex-1 bg-transparent px-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
+            <main className="min-w-0 flex-1 bg-transparent px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:px-5 sm:pb-[calc(5.75rem+env(safe-area-inset-bottom))] sm:pt-6 lg:px-8 lg:py-8">
               <div className="mx-auto max-w-7xl motion-safe:animate-[fade-slide-in_.25s_ease-out]">{children}</div>
             </main>
+            <MobileBottomNav />
           </div>
         </div>
       </PullToRefresh>

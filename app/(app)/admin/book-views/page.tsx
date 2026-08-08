@@ -72,7 +72,7 @@ export default function AdminBookViewsPage() {
       <div className="hidden lg:block">
         <Table columns={['Book', 'Created by', 'Age / level', 'Views', 'Readers', 'Reads', 'Completed', 'Likes']}>
           {books.map((book) => <tr key={book.book_id}>
-            <td className="px-4 py-3"><div className="flex items-center gap-3">{book.cover_image_url ? <img src={book.cover_image_url} alt="" className="h-14 w-11 rounded-xl object-cover" /> : <span className="grid h-14 w-11 place-items-center rounded-xl bg-brand-400/10"><BookOpen className="h-5 w-5 text-brand-600" /></span>}<span className="font-semibold text-brand-900">{book.title}</span></div></td>
+            <td className="px-4 py-3"><div className="flex items-center gap-3">{book.cover_image_url ? <img src={book.cover_image_url} alt="" loading="lazy" decoding="async" className="h-14 w-11 rounded-xl object-cover" /> : <span className="grid h-14 w-11 place-items-center rounded-xl bg-brand-400/10"><BookOpen className="h-5 w-5 text-brand-600" /></span>}<span className="font-semibold text-brand-900">{book.title}</span></div></td>
             <td className="px-4 py-3"><BookAttribution label={book.created_by_label} /></td>
             <td className="px-4 py-3 text-muted"><p>{book.age_group}</p><p className="capitalize">{book.reading_level}</p></td>
             <td className="px-4 py-3 font-semibold text-brand-900">{book.total_views.toLocaleString()}<p className="text-xs font-normal text-muted">{book.unique_viewers.toLocaleString()} unique</p></td>
@@ -84,7 +84,7 @@ export default function AdminBookViewsPage() {
         </Table>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:hidden">{books.map((book) => <Card key={book.book_id}>
-        <div className="flex gap-3">{book.cover_image_url && <img src={book.cover_image_url} alt="" className="h-20 w-16 rounded-xl object-cover" />}<div><h2 className="font-semibold text-brand-900">{book.title}</h2><BookAttribution label={book.created_by_label} className="mt-1" /><p className="text-sm capitalize text-muted">{book.age_group} · {book.reading_level}</p></div></div>
+        <div className="flex gap-3">{book.cover_image_url && <img src={book.cover_image_url} alt="" loading="lazy" decoding="async" className="h-20 w-16 rounded-xl object-cover" />}<div><h2 className="font-semibold text-brand-900">{book.title}</h2><BookAttribution label={book.created_by_label} className="mt-1" /><p className="text-sm capitalize text-muted">{book.age_group} · {book.reading_level}</p></div></div>
         <dl className="mt-4 grid grid-cols-2 gap-2 text-center min-[380px]:grid-cols-3">
           <div className="soft-inset rounded-xl p-2"><Eye className="mx-auto h-4 w-4 text-brand-600" /><dt className="text-xs text-muted">Views</dt><dd className="font-bold text-brand-900">{book.total_views.toLocaleString()}</dd></div>
           <div className="soft-inset rounded-xl p-2"><BookOpen className="mx-auto h-4 w-4 text-brand-600" /><dt className="text-xs text-muted">Reads</dt><dd className="font-bold text-brand-900">{book.total_reads.toLocaleString()}</dd></div>

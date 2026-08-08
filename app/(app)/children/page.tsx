@@ -73,7 +73,7 @@ export default function ChildrenPage() {
                       {child.profile_image_url ? (
                         <>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={child.profile_image_url} alt="" className="h-full w-full object-cover" />
+                          <img src={child.profile_image_url} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                         </>
                       ) : child.name[0]?.toUpperCase() || '?'}
                     </div>
