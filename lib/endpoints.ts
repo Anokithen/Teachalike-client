@@ -56,6 +56,11 @@ export const childrenApi = {
   leaderboardEntry: (id: number | string, week: string = 'current') =>
     api.get(`/api/children/${id}/leaderboard-entry`, { params: { week } }),
 };
+export const activeChildApi = {
+  get: () => api.get('/api/parent/active-child'),
+  activate: (childId: number, pin: string) => api.post('/api/parent/active-child', { child_id: childId, pin }),
+  lock: () => api.delete('/api/parent/active-child'),
+};
 
 // ---- Books ----
 export const booksApi = {
@@ -94,7 +99,6 @@ export const teacherBooksApi = {
 export const miniGamesApi = {
   get: (id: number | string) => api.get(`/api/mini-games/${id}`),
   submitResult: (id: number | string, payload: {
-    child_id: number;
     answers: Array<QuizAnswerSubmission | { word_id: string; response: string }>;
     difficulty?: 'easy' | 'medium' | 'hard';
   }) =>
@@ -103,7 +107,7 @@ export const miniGamesApi = {
 
 // ---- Reading sessions ----
 export const sessionsApi = {
-  create: (payload: { child_id: number; book_id: number; voice_profile_id?: number }) =>
+  create: (payload: { book_id: number; voice_profile_id?: number }) =>
     api.post('/api/reading-sessions', payload),
   get: (id: number | string) => api.get(`/api/reading-sessions/${id}`),
   update: (id: number | string, payload: Record<string, unknown>) =>

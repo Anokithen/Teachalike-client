@@ -1,5 +1,7 @@
 # TeachAlike frontend
 
+Parents activate a child from the global header with the existing six-digit profile PIN. The verified child context is restored across same-tab refreshes using an opaque `X-Child-Session` token held only in `sessionStorage`; activity pages never select a child or send parent `child_id`. Locking, logout, expiry, PIN changes, and child deletion clear the context. Offline point-earning synchronization is intentionally unavailable for parent accounts because queued child IDs cannot be trusted.
+
 Next.js (App Router) + Tailwind CSS frontend for the TeachAlike Flask backend (`Teach-api`),
 built from `TeachAlike_Frontend_Spec.md`.
 

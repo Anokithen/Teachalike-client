@@ -22,7 +22,7 @@ import {
   Volume2,
   type LucideIcon,
 } from 'lucide-react';
-import { adminApi, bookNarrationsApi, booksApi, childrenApi, voiceProfilesApi, sessionsApi } from '@/lib/endpoints';
+import { adminApi, bookNarrationsApi, booksApi, voiceProfilesApi, sessionsApi } from '@/lib/endpoints';
 import { useAuth } from '@/lib/auth-context';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
@@ -31,10 +31,10 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { Select } from '@/components/ui/Input';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { ChildPinModal } from '@/components/children/ChildPinModal';
 import { BookEditModal } from '@/components/books/BookEditModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { ApiErrorShape, Book, BookEngagement, BookNarration, Child, MiniGame, MiniGameGenerationStatusResponse, VoiceProfile } from '@/lib/types';
+import { ApiErrorShape, Book, BookEngagement, BookNarration, MiniGame, MiniGameGenerationStatusResponse, VoiceProfile } from '@/lib/types';
+import { useActiveChild } from '@/lib/active-child-context';
 import { BookAttribution } from '@/components/books/BookAttribution';
 
 const GAME_DETAILS: Record<string, { icon: LucideIcon; goal: string; description: string }> = {
@@ -47,13 +47,13 @@ export default function BookDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { isAdmin } = useAuth();
+  const { activeChild } = useActiveChild();
 
   const [book, setBook] = useState<Book | null>(null);
   const [miniGames, setMiniGames] = useState<MiniGame[] | null>(null);
   const [generationStatus, setGenerationStatus] = useState<MiniGameGenerationStatusResponse | null>(null);
   const [regenerating, setRegenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
-  const [children, setChildren] = useState<Child[] | null>(null);
   const [voiceProfiles, setVoiceProfiles] = useState<VoiceProfile[]>([]);
   const [narrations, setNarrations] = useState<BookNarration[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -62,8 +62,6 @@ export default function BookDetailPage() {
   const [likeError, setLikeError] = useState<string | null>(null);
   const viewRequested = useRef(false);
 
-  const [childId, setChildId] = useState('');
-  const [pendingChild, setPendingChild] = useState<Child | null>(null);
   const [voiceProfileId, setVoiceProfileId] = useState('');
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | string[] | null>(null);
@@ -81,15 +79,13 @@ export default function BookDetailPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [bookRes, gamesRes, childrenRes, narrationsRes] = await Promise.all([
+        const [bookRes, gamesRes, narrationsRes] = await Promise.all([
           booksApi.get(id),
           booksApi.miniGames(id),
-          childrenApi.list(),
           bookNarrationsApi.list(id),
         ]);
         setBook(bookRes.data.book);
         setMiniGames(gamesRes.data.mini_games);
-        setChildren(childrenRes.data.children);
         setNarrations(narrationsRes.data.book_narrations);
         try {
           const statusRes = await booksApi.miniGameGenerationStatus(id);
@@ -139,13 +135,13 @@ export default function BookDetailPage() {
   useEffect(() => {
     if (!book) return;
     let active = true;
-    booksApi.engagement(id, childId || undefined).then((response) => {
+    booksApi.engagement(id, activeChild?.id).then((response) => {
       if (active) setEngagement(response.data);
     }).catch((err) => {
       if (active) setLikeError((err as ApiErrorShape).message);
     });
     return () => { active = false; };
-  }, [book, childId, id]);
+  }, [book, activeChild, id]);
 
   const selectedNarration = narrations.find((narration) => String(narration.voice_profile_id) === narrationVoiceId) || null;
   const storyImages = [book?.cover_image_url, ...(book?.image_urls || [])].filter(Boolean) as string[];
@@ -221,16 +217,13 @@ export default function BookDetailPage() {
   async function onStartSession(e: FormEvent) {
     e.preventDefault();
     setStartError(null);
-    if (!childId) {
-      setStartError('Choose a child to start this session for.');
+    if (!activeChild) {
+      setStartError('Choose a child from the header before starting this activity.');
       return;
     }
     setStarting(true);
     try {
-      const payload: { child_id: number; book_id: number; voice_profile_id?: number } = {
-        child_id: Number(childId),
-        book_id: Number(id),
-      };
+      const payload: { book_id: number; voice_profile_id?: number } = { book_id: Number(id) };
       if (voiceProfileId) payload.voice_profile_id = Number(voiceProfileId);
       const res = await sessionsApi.create(payload);
       router.push(`/reading-sessions/${res.data.reading_session.id}`);
@@ -242,30 +235,17 @@ export default function BookDetailPage() {
     }
   }
 
-  function selectChild(value: string) {
-    if (!value) {
-      setChildId('');
-      setPendingChild(null);
-      return;
-    }
-    const selected = children?.find((child) => String(child.id) === value) || null;
-    setChildId('');
-    if (selected?.has_pin) setPendingChild(selected);
-    else setPendingChild(null);
-    if (selected && !selected.has_pin) setChildId(String(selected.id));
-  }
-
   async function toggleLike() {
-    if (!childId) {
-      setLikeError('Choose and verify a child before liking this book.');
+    if (!activeChild) {
+      setLikeError('Choose and verify a child from the header before liking this book.');
       return;
     }
     if (!engagement) return;
     setLikeLoading(true);
     setLikeError(null);
     try {
-      if (engagement.liked_by_child) await booksApi.unlike(id, childId);
-      else await booksApi.like(id, childId);
+      if (engagement.liked_by_child) await booksApi.unlike(id, activeChild.id);
+      else await booksApi.like(id, activeChild.id);
       setEngagement((current) => current ? {
         ...current,
         likes: Math.max(0, current.likes + (current.liked_by_child ? -1 : 1)),
@@ -387,14 +367,7 @@ export default function BookDetailPage() {
         <Card>
           <h2 className="mb-4 text-sm font-semibold text-brand-900">Start a reading session</h2>
           <form onSubmit={onStartSession} className="space-y-4">
-            <Select label="Child" value={childId} onChange={(e) => selectChild(e.target.value)}>
-              <option value="">Choose a child</option>
-              {children?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
+            <p className="rounded-xl bg-brand-50 p-3 text-sm font-bold text-brand-800">{activeChild ? `Reading as ${activeChild.name}` : 'Choose a child from the header before starting this activity.'}</p>
             {voiceProfiles.length > 0 && (
               <Select
                 label="Voice (optional)"
@@ -411,11 +384,11 @@ export default function BookDetailPage() {
             )}
             <Alert>{startError}</Alert>
             {!isAdmin && <div className="rounded-2xl border border-pink/25 bg-pink/5 p-3">
-              <Button type="button" variant={engagement?.liked_by_child ? 'secondary' : 'ghost'} loading={likeLoading} disabled={!childId || !engagement} onClick={toggleLike} className="w-full" aria-label={engagement?.liked_by_child ? 'Unlike this book for selected child' : 'Like this book for selected child'} aria-pressed={Boolean(engagement?.liked_by_child)}>
+              <Button type="button" variant={engagement?.liked_by_child ? 'secondary' : 'ghost'} loading={likeLoading} disabled={!activeChild || !engagement} onClick={toggleLike} className="w-full" aria-label="Like this book for the active child" aria-pressed={Boolean(engagement?.liked_by_child)}>
                 <Heart className={`h-5 w-5 ${engagement?.liked_by_child ? 'fill-pink text-pink' : 'text-pink'}`} aria-hidden="true" />
                 {engagement?.liked_by_child ? 'Unlike this book' : 'Like this book'}
               </Button>
-              {!childId && <p className="mt-2 text-center text-xs text-muted">Choose and verify a child to like books.</p>}
+              {!activeChild && <p className="mt-2 text-center text-xs text-muted">Choose and verify a child from the header to like books.</p>}
               {likeError && <div className="mt-2"><Alert>{likeError}</Alert></div>}
             </div>}
             <Button type="submit" loading={starting} className="w-full">
@@ -481,7 +454,6 @@ export default function BookDetailPage() {
           </div>
         )}
       </div>
-      <ChildPinModal child={pendingChild} onClose={() => setPendingChild(null)} onVerified={(child) => setChildId(String(child.id))} />
       {isAdmin && (
         <>
           <BookEditModal

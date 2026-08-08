@@ -66,6 +66,7 @@ export interface Child {
   has_pin?: boolean;
   stats?: ChildStats;
 }
+export type ActiveChildStatus = 'loading' | 'locked' | 'active' | 'expired';
 
 export interface Book {
   id: number;

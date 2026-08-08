@@ -19,17 +19,16 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { childrenApi, miniGamesApi } from '@/lib/endpoints';
+import { miniGamesApi } from '@/lib/endpoints';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input, Select } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
-import { ChildPinModal } from '@/components/children/ChildPinModal';
+import { useActiveChild } from '@/lib/active-child-context';
 import {
   ApiErrorShape,
-  Child,
   MiniGame,
   MiniGameResultResponse,
   PublicQuizQuestion,
@@ -66,10 +65,8 @@ function isPuzzleWord(word: SpellingWord | WordPuzzleWord): word is WordPuzzleWo
 
 export default function MiniGamePage() {
   const { id } = useParams<{ id: string }>();
+  const { activeChild } = useActiveChild();
   const [game, setGame] = useState<MiniGame | null>(null);
-  const [children, setChildren] = useState<Child[] | null>(null);
-  const [childId, setChildId] = useState('');
-  const [pendingChild, setPendingChild] = useState<Child | null>(null);
   const [quizSelections, setQuizSelections] = useState<Record<string, number>>({});
   const [wordResponses, setWordResponses] = useState<Record<string, string>>({});
   const [hintsUsed, setHintsUsed] = useState<Record<string, boolean>>({});
@@ -86,12 +83,8 @@ export default function MiniGamePage() {
     async function load() {
       setError(null);
       try {
-        const [gameResponse, childrenResponse] = await Promise.all([
-          miniGamesApi.get(id),
-          childrenApi.list(),
-        ]);
+        const gameResponse = await miniGamesApi.get(id);
         setGame(gameResponse.data.mini_game);
-        setChildren(childrenResponse.data.children);
       } catch (err) {
         setError((err as ApiErrorShape).message);
       }
@@ -123,18 +116,6 @@ export default function MiniGamePage() {
     return () => window.clearTimeout(timer);
   }, [game?.game_type, memoriseSecondsLeft, spellingStage]);
 
-  function selectChild(value: string) {
-    if (!value) {
-      setChildId('');
-      setPendingChild(null);
-      return;
-    }
-    const selected = children?.find((child) => String(child.id) === value) ?? null;
-    setChildId('');
-    if (selected?.has_pin) setPendingChild(selected);
-    else if (selected) setChildId(String(selected.id));
-  }
-
   function resetGame() {
     setQuizSelections({});
     setWordResponses({});
@@ -157,8 +138,8 @@ export default function MiniGamePage() {
   async function finishGame() {
     if (!game) return;
     setSubmitError(null);
-    if (!childId) {
-      setSubmitError('Choose a child before finishing the game.');
+    if (!activeChild) {
+      setSubmitError('Choose a child from the header before finishing the game.');
       return;
     }
 
@@ -188,7 +169,6 @@ export default function MiniGamePage() {
     setSubmitting(true);
     try {
       const response = await miniGamesApi.submitResult(id, {
-        child_id: Number(childId),
         answers,
         ...(game.game_type === 'spelling' && spellingDifficulty
           ? { difficulty: spellingDifficulty }
@@ -206,11 +186,12 @@ export default function MiniGamePage() {
   if (error) {
     return <div className="space-y-3"><Alert>{error}</Alert><Button type="button" variant="secondary" onClick={() => window.location.reload()}>Try again</Button></div>;
   }
-  if (!game || !children) return <div className="flex justify-center py-16"><Spinner size={28} /></div>;
+  if (!game) return <div className="flex justify-center py-16"><Spinner size={28} /></div>;
 
   const details = GAME_DETAILS[game.game_type] ?? { icon: Gamepad2, title: 'Mini-game', goal: 'Practise reading', instructions: 'Complete the activity.' };
   const GameIcon = details.icon;
   const playable = game.generation_status === 'ready' || game.generation_status === 'fallback';
+  if (playable && !activeChild) return <Card className="mx-auto max-w-xl py-16 text-center"><h1 className="text-2xl font-black text-brand-900">Choose a child before playing</h1><p className="mt-2 text-muted">Choose and verify a child from the global header before starting this activity.</p></Card>;
   const currentQuestion = quizQuestions[quizIndex];
   const resultById = new Map(result?.answers.map((answer) => [answer.question_id, answer]) ?? []);
 
@@ -247,10 +228,7 @@ export default function MiniGamePage() {
         </Card>
       ) : (
         <Card className="space-y-6">
-          <Select label="Playing as" value={childId} onChange={(event) => selectChild(event.target.value)}>
-            <option value="">Choose a child</option>
-            {children.map((child) => <option key={child.id} value={child.id}>{child.name}</option>)}
-          </Select>
+          <p className="rounded-xl bg-brand-50 p-3 text-sm font-bold text-brand-800">Points will be added to {activeChild?.name}.</p>
 
           {result ? (
             <section className="mini-game-result text-center" aria-live="polite">
@@ -313,7 +291,6 @@ export default function MiniGamePage() {
           {submitError && <Alert>{submitError}</Alert>}
         </Card>
       )}
-      <ChildPinModal child={pendingChild} onClose={() => setPendingChild(null)} onVerified={(child) => setChildId(String(child.id))} />
       <span className="sr-only" aria-live="polite">{result ? `${result.game_result.score} points earned` : ''}</span>
       {resultById.size > 0 && <span className="sr-only">Answer review is available above.</span>}
     </main>

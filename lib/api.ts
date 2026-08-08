@@ -4,6 +4,10 @@ import { ApiErrorShape } from '@/lib/types';
 
 const ACCESS_TOKEN_KEY = 'teachalike_access_token';
 const REFRESH_TOKEN_KEY = 'teachalike_refresh_token';
+const CHILD_SESSION_KEY = 'teachalike_child_session';
+export const getChildSessionToken = () => typeof window === 'undefined' ? null : window.sessionStorage.getItem(CHILD_SESSION_KEY);
+export const setChildSessionToken = (token: string) => { if (typeof window !== 'undefined') window.sessionStorage.setItem(CHILD_SESSION_KEY, token); };
+export const clearChildSessionToken = () => { if (typeof window !== 'undefined') window.sessionStorage.removeItem(CHILD_SESSION_KEY); };
 
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -30,6 +34,7 @@ export function clearTokens(): void {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(ACCESS_TOKEN_KEY);
   window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+  clearChildSessionToken();
 }
 
 const api = axios.create({
@@ -43,6 +48,10 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  const url = String(config.url || '');
+  if (url.includes('/api/parent/active-child') || url.includes('/api/reading-sessions') || (url.includes('/api/mini-games/') && url.includes('/results'))) {
+    const childToken = getChildSessionToken(); if (childToken) config.headers['X-Child-Session'] = childToken;
   }
   return config;
 });

@@ -2,9 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, LogOut, Menu, Moon, Sun, UserRound } from 'lucide-react';
+import { ChevronDown, Lock, LogOut, Menu, Moon, Sun, UserRound } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Logo } from '@/components/layout/Logo';
+import { useActiveChild } from '@/lib/active-child-context';
+import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
+import type { Child } from '@/lib/types';
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -12,8 +18,14 @@ interface TopbarProps {
 
 export function Topbar({ onMenuClick }: TopbarProps) {
   const { account, logout } = useAuth();
+  const { children, activeChild, activateChild, lockChild } = useActiveChild();
   const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [childMenuOpen, setChildMenuOpen] = useState(false);
+  const [pendingChild, setPendingChild] = useState<Child|null>(null);
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState<string|null>(null);
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     const storedTheme = window.localStorage.getItem('teachalike_theme');
@@ -22,6 +34,12 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     setDarkMode(isDark);
     document.documentElement.classList.toggle('dark', isDark);
     document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+  }, []);
+
+  useEffect(() => {
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') setChildMenuOpen(false); };
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
   }, []);
 
   function toggleTheme() {
@@ -68,6 +86,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             <Moon className="h-5 w-5" aria-hidden="true" />
           )}
         </button>
+        {account?.role === 'parent' && <div className="relative"><button type="button" onClick={()=>setChildMenuOpen(v=>!v)} className="soft-inset flex min-h-11 items-center gap-2 rounded-full px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400" aria-expanded={childMenuOpen} aria-label={activeChild ? `Playing as ${activeChild.name}` : 'Choose child'}><span className="grid h-9 w-9 place-items-center rounded-full bg-violet-100 font-bold text-violet-800">{activeChild?.name?.[0]?.toUpperCase() || '＋'}</span><span className="hidden text-left sm:block"><span className="block text-[10px] uppercase text-muted">{activeChild?'Playing as':'Child mode'}</span><span className="block max-w-24 truncate font-bold">{activeChild?.name || 'Choose child'}</span></span><ChevronDown className="h-4 w-4" /></button>{childMenuOpen&&<div className="absolute right-0 z-40 mt-2 w-72 rounded-2xl border border-border bg-surface p-2 shadow-card" role="menu">{children.length?children.map(child=><button key={child.id} type="button" role="menuitemradio" aria-checked={activeChild?.id===child.id} onClick={()=>{setPendingChild(child);setPin('');setPinError(null);setChildMenuOpen(false);}} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2 text-left hover:bg-bg"><span className="grid h-9 w-9 place-items-center rounded-full bg-brand-100 font-bold">{child.name[0]}</span><span className="min-w-0 flex-1"><span className="block truncate font-bold">{child.name}</span><span className="block text-xs text-muted">{child.reading_level} · {child.has_pin?'PIN required':'PIN not set'}</span></span>{activeChild?.id===child.id&&<span aria-label="Selected">✓</span>}</button>):<p className="p-3 text-sm text-muted">No children yet.</p>}<Link href="/children" onClick={()=>setChildMenuOpen(false)} className="block rounded-xl px-3 py-3 text-sm font-bold text-brand-700">{children.length?'Manage children':'Add child'}</Link>{activeChild&&<button type="button" onClick={()=>{void lockChild();setChildMenuOpen(false);}} className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-danger"><Lock className="h-4 w-4"/>Lock child mode</button>}</div>}</div>}
         <div className="relative min-w-0">
         <button
           type="button"
@@ -120,6 +139,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         </div>
       </div>
       </header>
+      <Modal open={Boolean(pendingChild)} onClose={()=>setPendingChild(null)} title={pendingChild?`Enter ${pendingChild.name}'s password`:''}><form onSubmit={async e=>{e.preventDefault();if(!pendingChild)return;if(!/^\d{6}$/.test(pin)){setPinError('Enter the 6-digit profile PIN.');return;}setVerifying(true);try{await activateChild(pendingChild.id,pin);setPendingChild(null);}catch(error){setPin('');setPinError((error as {message?:string}).message||'That child password was not correct. Please try again.');}finally{setVerifying(false);}}} className="space-y-4"><p className="text-sm text-muted">Enter the 6-digit profile PIN for this child.</p><Input label="Child password" type="password" inputMode="numeric" maxLength={6} value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,'').slice(0,6))} autoFocus/>{pinError&&<Alert>{pinError}</Alert>}<div className="flex justify-end gap-3"><Button type="button" variant="ghost" onClick={()=>setPendingChild(null)}>Cancel</Button><Button type="submit" loading={verifying}>Verify child</Button></div></form></Modal>
     </>
   );
 }
