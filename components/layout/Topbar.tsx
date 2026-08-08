@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Lock, LogOut, Menu, Moon, Sun, UserRound } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Lock, LogOut, Menu, Moon, Sun, UserRound, X } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Logo } from '@/components/layout/Logo';
 import { useActiveChild } from '@/lib/active-child-context';
@@ -55,10 +55,17 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     void logout();
   }
 
+  function chooseChild(child: Child) {
+    setPendingChild(child);
+    setPin('');
+    setPinError(null);
+    setChildMenuOpen(false);
+  }
+
   return (
     <>
-      <header className="sticky top-0 z-30 flex w-full min-w-0 shrink-0 items-center justify-between gap-2 border-b border-border/60 bg-white/85 px-2.5 py-2.5 text-brand-900 backdrop-blur sm:px-5 sm:py-3 lg:px-8">
-      <div className="flex min-w-0 items-center gap-1.5 lg:hidden">
+      <header className="sticky top-0 z-30 flex w-full min-w-0 shrink-0 items-center justify-between gap-1.5 border-b border-border/60 bg-white/90 px-2 py-2 text-brand-900 backdrop-blur sm:gap-2 sm:px-5 sm:py-3 lg:px-8">
+      <div className="flex min-w-0 items-center gap-1 sm:gap-1.5 lg:hidden">
         <button
           type="button"
           onClick={onMenuClick}
@@ -67,16 +74,16 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         >
           <Menu className="h-[22px] w-[22px]" aria-hidden="true" />
         </button>
-        <Logo compact />
+        <span className="hidden min-[390px]:block"><Logo compact /></span>
       </div>
 
       <div className="hidden lg:block" aria-hidden="true" />
 
-      <div className="flex min-w-0 shrink-0 items-center gap-2">
+      <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
         <button
           type="button"
           onClick={toggleTheme}
-          className="soft-inset grid h-11 w-11 shrink-0 place-items-center rounded-2xl text-lg transition hover:bg-white active:scale-90"
+          className="soft-inset hidden h-11 w-11 shrink-0 place-items-center rounded-2xl text-lg transition hover:bg-white active:scale-90 min-[460px]:grid"
           aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
         >
@@ -86,12 +93,12 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             <Moon className="h-5 w-5" aria-hidden="true" />
           )}
         </button>
-        {account?.role === 'parent' && <div className="relative"><button type="button" onClick={()=>setChildMenuOpen(v=>!v)} className="soft-inset flex min-h-11 items-center gap-2 rounded-full px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400" aria-expanded={childMenuOpen} aria-label={activeChild ? `Playing as ${activeChild.name}` : 'Choose child'}><span className="grid h-9 w-9 place-items-center rounded-full bg-violet-100 font-bold text-violet-800">{activeChild?.name?.[0]?.toUpperCase() || '＋'}</span><span className="hidden text-left sm:block"><span className="block text-[10px] uppercase text-muted">{activeChild?'Playing as':'Child mode'}</span><span className="block max-w-24 truncate font-bold">{activeChild?.name || 'Choose child'}</span></span><ChevronDown className="h-4 w-4" /></button>{childMenuOpen&&<div className="absolute right-0 z-40 mt-2 w-72 rounded-2xl border border-border bg-surface p-2 shadow-card" role="menu">{children.length?children.map(child=><button key={child.id} type="button" role="menuitemradio" aria-checked={activeChild?.id===child.id} onClick={()=>{setPendingChild(child);setPin('');setPinError(null);setChildMenuOpen(false);}} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2 text-left hover:bg-bg"><span className="grid h-9 w-9 place-items-center rounded-full bg-brand-100 font-bold">{child.name[0]}</span><span className="min-w-0 flex-1"><span className="block truncate font-bold">{child.name}</span><span className="block text-xs text-muted">{child.reading_level} · {child.has_pin?'PIN required':'PIN not set'}</span></span>{activeChild?.id===child.id&&<span aria-label="Selected">✓</span>}</button>):<p className="p-3 text-sm text-muted">No children yet.</p>}<Link href="/children" onClick={()=>setChildMenuOpen(false)} className="block rounded-xl px-3 py-3 text-sm font-bold text-brand-700">{children.length?'Manage children':'Add child'}</Link>{activeChild&&<button type="button" onClick={()=>{void lockChild();setChildMenuOpen(false);}} className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-danger"><Lock className="h-4 w-4"/>Lock child mode</button>}</div>}</div>}
+        {account?.role === 'parent' && <div className="relative min-w-0"><button type="button" onClick={()=>setChildMenuOpen(v=>!v)} className="soft-inset flex min-h-11 min-w-11 max-w-[8.5rem] items-center gap-1.5 rounded-full px-1.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400 sm:max-w-[11rem] sm:gap-2 sm:px-2" aria-expanded={childMenuOpen} aria-haspopup="menu" aria-label={activeChild ? `Playing as ${activeChild.name}, verified` : 'Choose child'}><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-violet-100 font-bold text-violet-800 sm:h-9 sm:w-9">{activeChild?.name?.[0]?.toUpperCase() || '＋'}</span><span className="min-w-0 text-left"><span className="hidden text-[10px] font-bold uppercase leading-none text-muted sm:block">{activeChild?'Playing as':'Child mode'}</span><span className="block max-w-[4.5rem] truncate text-xs font-bold sm:max-w-24 sm:text-sm">{activeChild?.name || 'Choose child'}</span></span>{activeChild && <CheckCircle2 className="hidden h-4 w-4 shrink-0 text-success min-[520px]:block" aria-label="Verified" />}<ChevronDown className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden="true" /></button>{childMenuOpen&&<><button type="button" className="fixed inset-0 z-30 bg-brand-900/35 sm:bg-transparent" onClick={()=>setChildMenuOpen(false)} aria-label="Close child menu"/><div className="fixed inset-x-0 bottom-0 z-40 max-h-[min(80dvh,34rem)] overflow-y-auto rounded-t-3xl border border-border bg-surface p-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:mt-2 sm:max-h-[28rem] sm:w-80 sm:rounded-2xl sm:p-2" role="menu" aria-label="Choose active child"><div className="mb-2 flex items-center justify-between px-2 py-1 sm:hidden"><p className="font-bold text-brand-900">Choose a child</p><button type="button" onClick={()=>setChildMenuOpen(false)} className="grid h-11 w-11 place-items-center rounded-xl hover:bg-bg" aria-label="Close child menu"><X className="h-5 w-5" /></button></div>{children.length?children.map(child=><button key={child.id} type="button" role="menuitemradio" aria-checked={activeChild?.id===child.id} onClick={()=>chooseChild(child)} className="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 py-2 text-left hover:bg-bg"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-100 font-bold">{child.name[0]}</span><span className="min-w-0 flex-1"><span className="block truncate font-bold">{child.name}</span><span className="block text-xs text-muted">{child.reading_level} · {child.has_pin?'PIN required':'PIN not set'}</span></span>{activeChild?.id===child.id&&<CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-label="Selected" />}</button>):<p className="p-3 text-sm text-muted">No children yet.</p>}<Link href="/children" onClick={()=>setChildMenuOpen(false)} className="flex min-h-11 items-center rounded-xl px-3 py-2 text-sm font-bold text-brand-700 hover:bg-bg">{children.length?'Manage children':'Add child'}</Link>{activeChild&&<button type="button" onClick={()=>{void lockChild();setChildMenuOpen(false);}} className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-bold text-danger hover:bg-danger/5"><Lock className="h-4 w-4"/>Lock child mode</button>}</div></>}</div>}
         <div className="relative min-w-0">
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
-          className="soft-inset flex max-w-[calc(100vw-8.5rem)] items-center gap-1.5 rounded-full px-1.5 py-1.5 text-left text-sm font-medium text-brand-900 transition hover:bg-white active:scale-[.98] focus:outline-none focus:ring-2 focus:ring-brand-400 min-[380px]:gap-2 min-[380px]:px-2 sm:max-w-none sm:gap-3 sm:px-3 sm:py-2"
+          className="soft-inset flex min-h-11 min-w-11 max-w-[4rem] items-center gap-1 rounded-full px-1.5 py-1 text-left text-sm font-medium text-brand-900 transition hover:bg-white active:scale-[.98] focus:outline-none focus:ring-2 focus:ring-brand-400 sm:max-w-none sm:gap-3 sm:px-3 sm:py-2"
           aria-expanded={menuOpen}
           aria-label="Open profile menu"
         >
@@ -103,7 +110,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               </>
             ) : account?.name?.[0]?.toUpperCase() || '?'}
           </span>
-          <span className="hidden min-w-0 flex-col min-[380px]:flex">
+          <span className="hidden min-w-0 flex-col md:flex">
             <span className="max-w-[145px] truncate font-semibold leading-tight">{account?.name || 'My profile'}</span>
             <span className="mt-0.5 text-xs capitalize text-cyan-100">{account?.role || 'Account'}</span>
           </span>

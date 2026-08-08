@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ArrowLeft, X } from 'lucide-react';
@@ -21,6 +22,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     .filter((item) => pathname === item.href || pathname?.startsWith(item.href + '/'))
     .sort((left, right) => right.href.length - left.href.length)[0]?.href;
 
+  useEffect(() => {
+    if (!open) return;
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [onClose, open]);
+
   return (
     <>
       {/* mobile overlay */}
@@ -32,7 +40,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         />
       )}
       <aside
-          className={`sidebar-kids fixed inset-y-4 left-4 z-50 flex h-[calc(100dvh-2rem)] w-[min(80vw,276px)] max-w-[calc(100vw-1.5rem)] flex-col overflow-y-auto overscroll-contain p-4 transition-transform sm:p-5 lg:inset-y-auto lg:left-4 lg:top-4 lg:h-[calc(100dvh-2rem)] lg:w-[276px] lg:translate-x-0 ${
+          className={`sidebar-kids fixed inset-y-2 left-2 z-50 flex h-[calc(100dvh-1rem)] w-[min(calc(100vw-1rem),20rem)] flex-col overflow-y-auto overscroll-contain p-4 transition-transform sm:inset-y-4 sm:left-4 sm:h-[calc(100dvh-2rem)] sm:p-5 lg:inset-y-auto lg:left-4 lg:top-4 lg:h-[calc(100dvh-2rem)] lg:w-[276px] lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-[calc(100%+1rem)] pointer-events-none lg:pointer-events-auto'
         }`}
       >

@@ -129,7 +129,7 @@ export function Modal({
             {title}
           </h2>
         )}
-        <div className="min-h-0 overflow-y-auto px-5 py-5 text-sm text-brand-900 sm:px-6">{children}</div>
+        <div className="min-h-0 overflow-x-hidden overflow-y-auto px-4 py-5 text-sm text-brand-900 sm:px-6">{children}</div>
         {footer && <div className="shrink-0 border-t border-border px-5 py-4 sm:px-6"><div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">{footer}</div></div>}
       </div>
     </div>

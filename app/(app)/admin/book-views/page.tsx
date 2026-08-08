@@ -85,14 +85,14 @@ export default function AdminBookViewsPage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:hidden">{books.map((book) => <Card key={book.book_id}>
         <div className="flex gap-3">{book.cover_image_url && <img src={book.cover_image_url} alt="" className="h-20 w-16 rounded-xl object-cover" />}<div><h2 className="font-semibold text-brand-900">{book.title}</h2><BookAttribution label={book.created_by_label} className="mt-1" /><p className="text-sm capitalize text-muted">{book.age_group} · {book.reading_level}</p></div></div>
-        <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
+        <dl className="mt-4 grid grid-cols-2 gap-2 text-center min-[380px]:grid-cols-3">
           <div className="soft-inset rounded-xl p-2"><Eye className="mx-auto h-4 w-4 text-brand-600" /><dt className="text-xs text-muted">Views</dt><dd className="font-bold text-brand-900">{book.total_views.toLocaleString()}</dd></div>
           <div className="soft-inset rounded-xl p-2"><BookOpen className="mx-auto h-4 w-4 text-brand-600" /><dt className="text-xs text-muted">Reads</dt><dd className="font-bold text-brand-900">{book.total_reads.toLocaleString()}</dd></div>
           <div className="soft-inset rounded-xl p-2"><Heart className="mx-auto h-4 w-4 text-pink" /><dt className="text-xs text-muted">Likes</dt><dd className="font-bold text-brand-900">{book.likes.toLocaleString()}</dd></div>
         </dl>
         <p className="mt-3 text-xs text-muted">{book.unique_viewers.toLocaleString()} unique viewers · {book.unique_readers.toLocaleString()} unique readers · {book.completed_reads.toLocaleString()} completed reads</p>
       </Card>)}</div>
-      {pagination && pagination.pages > 1 && <nav className="mt-5 flex items-center justify-between" aria-label="Book analytics pages"><Button variant="secondary" disabled={page <= 1} onClick={() => setPage((value) => value - 1)}>Previous</Button><p className="text-sm text-muted">Page {pagination.page.toLocaleString()} of {pagination.pages.toLocaleString()}</p><Button variant="secondary" disabled={page >= pagination.pages} onClick={() => setPage((value) => value + 1)}>Next</Button></nav>}
+      {pagination && pagination.pages > 1 && <nav className="mt-5 grid grid-cols-2 items-center gap-3 sm:flex sm:justify-between" aria-label="Book analytics pages"><p className="col-span-2 text-center text-sm text-muted sm:order-2 sm:col-auto">Page {pagination.page.toLocaleString()} of {pagination.pages.toLocaleString()}</p><Button className="w-full sm:order-1 sm:w-auto" variant="secondary" disabled={page <= 1} onClick={() => setPage((value) => value - 1)}>Previous</Button><Button className="w-full sm:order-3 sm:w-auto" variant="secondary" disabled={page >= pagination.pages} onClick={() => setPage((value) => value + 1)}>Next</Button></nav>}
     </>}
   </div>;
 }
