@@ -506,11 +506,17 @@
   html,
   body {
     min-height: 100%;
-    overscroll-behavior-y: none;
+  }
+
+  html {
+    overflow-y: auto;
+    overscroll-behavior-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   body {
     min-height: 100dvh;
+    touch-action: pan-y pinch-zoom;
   }
 
   .home-night {

@@ -5,7 +5,6 @@ import type { ReactNode } from 'react';
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
-import { PullToRefresh } from '@/components/layout/PullToRefresh';
 import { ActiveChildProvider } from '@/lib/active-child-context';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 
@@ -15,7 +14,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <AuthGuard>
       <ActiveChildProvider>
-      <PullToRefresh>
         <div className="app-shell flex min-h-[100dvh] min-w-0">
           <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           <div className="flex min-w-0 flex-1 flex-col app-content-surface lg:ml-[308px]">
@@ -28,7 +26,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <MobileBottomNav />
           </div>
         </div>
-      </PullToRefresh>
       </ActiveChildProvider>
     </AuthGuard>
   );
