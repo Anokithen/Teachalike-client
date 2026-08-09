@@ -292,7 +292,16 @@ export default function ReadingSessionPage() {
       const res = await sessionsApi.checkPronunciation(id, { paragraph_index: paragraphIndex, transcript });
       setPronunciationResult(res.data);
       setLiveProgress(null);
-      load();
+      try {
+        const completion = await sessionsApi.update(id, { mark_complete: true });
+        setSession(completion.data.reading_session);
+      } catch (completionError) {
+        setPronunciationError(
+          (completionError as ApiErrorShape).message
+          || 'Your pronunciation score was saved, but the session could not be marked complete. Please try again.',
+        );
+      }
+      void load();
     } catch (err) {
       setPronunciationError((err as ApiErrorShape).message);
     } finally {
@@ -509,7 +518,7 @@ export default function ReadingSessionPage() {
           <Card className="lg:col-span-2 overflow-hidden">
             <PronunciationComparison
               result={pronunciationResult}
-              onRetry={retryParagraph}
+              onRetry={session.is_complete ? undefined : retryParagraph}
               onReplayParagraph={selectedVoiceProfileId ? replayNarration : undefined}
             />
           </Card>

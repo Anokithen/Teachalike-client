@@ -20,7 +20,7 @@ import {
 
 interface PronunciationComparisonProps {
   result: PronunciationCheck;
-  onRetry: () => void;
+  onRetry?: () => void;
   onReplayParagraph?: () => void;
 }
 
@@ -212,7 +212,7 @@ export function PronunciationComparison({ result, onRetry, onReplayParagraph }: 
             </div>
             <button type="button" onClick={() => setSelectedToken(null)} className="min-h-11 rounded-xl px-3 text-sm font-bold text-brand-700">Close details</button>
           </div>
-          <Button type="button" className="mt-3" onClick={onRetry}><RotateCcw className="h-4 w-4" aria-hidden="true" />Try paragraph again</Button>
+          {onRetry && <Button type="button" className="mt-3" onClick={onRetry}><RotateCcw className="h-4 w-4" aria-hidden="true" />Try paragraph again</Button>}
         </div>
       )}
 
@@ -228,7 +228,7 @@ export function PronunciationComparison({ result, onRetry, onReplayParagraph }: 
                 <p className="mt-2 text-sm">Say it slowly, then read it with the nearby words.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {supportsSpeech && <Button type="button" variant="secondary" onClick={() => speakWord(word.expected)} aria-label={`Spell, then hear the word ${word.expected}`}><Volume2 className="h-4 w-4" aria-hidden="true" />Hear word</Button>}
-                  <Button type="button" onClick={onRetry}><RotateCcw className="h-4 w-4" aria-hidden="true" />Try again</Button>
+                  {onRetry && <Button type="button" onClick={onRetry}><RotateCcw className="h-4 w-4" aria-hidden="true" />Try again</Button>}
                 </div>
               </article>
             ))}
@@ -238,7 +238,7 @@ export function PronunciationComparison({ result, onRetry, onReplayParagraph }: 
 
       {result.feedback && <p className="text-sm text-brand-800"><strong>Reading tip:</strong> {result.feedback}</p>}
       <div className="flex flex-wrap gap-3">
-        <Button type="button" onClick={onRetry}><RotateCcw className="h-4 w-4" aria-hidden="true" />Read this paragraph again</Button>
+        {onRetry && <Button type="button" onClick={onRetry}><RotateCcw className="h-4 w-4" aria-hidden="true" />Read this paragraph again</Button>}
         {onReplayParagraph && <Button type="button" variant="secondary" onClick={onReplayParagraph}><Volume2 className="h-4 w-4" aria-hidden="true" />Replay book narration</Button>}
       </div>
     </section>
