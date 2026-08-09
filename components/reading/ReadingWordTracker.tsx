@@ -97,9 +97,10 @@ export function ReadingWordTracker({ paragraph, paragraphIndex, result, liveProg
       : fallbackWords(paragraph, paragraphIndex);
     if (!result && liveProgress) {
       const confirmed = new Set(liveProgress.confirmed_indices);
+      const retries = new Set(liveProgress.retry_indices || (liveProgress.retry_index === null ? [] : [liveProgress.retry_index]));
       nextWords.forEach((word, index) => {
         if (confirmed.has(index)) word.status = 'correct';
-        else if (index === liveProgress.retry_index) word.status = 'incorrect';
+        else if (retries.has(index)) word.status = 'incorrect';
         else if (index === liveProgress.active_index) {
           word.status = liveProgress.interim_transcript ? 'hearing' : 'active';
         }
@@ -111,7 +112,10 @@ export function ReadingWordTracker({ paragraph, paragraphIndex, result, liveProg
   }, [isReading, liveProgress, paragraph, paragraphIndex, result]);
   const completedCount = words.filter((word) => word.status === 'correct').length;
   const progress = words.length ? Math.round((completedCount / words.length) * 100) : 0;
-  const currentWordIndex = words.findIndex((word) => word.status === 'active' || word.status === 'hearing' || word.status === 'incorrect' || word.status === 'skipped');
+  const activeWordIndex = words.findIndex((word) => word.status === 'active' || word.status === 'hearing');
+  const currentWordIndex = activeWordIndex >= 0
+    ? activeWordIndex
+    : words.findIndex((word) => word.status === 'incorrect' || word.status === 'skipped');
 
   useEffect(() => {
     const container = containerRef.current;

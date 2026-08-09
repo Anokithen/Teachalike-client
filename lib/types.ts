@@ -280,6 +280,7 @@ export interface LiveReadingProgress {
   confirmed_indices: number[];
   active_index: number | null;
   retry_index: number | null;
+  retry_indices: number[];
   completed: boolean;
   total_words: number;
 }
