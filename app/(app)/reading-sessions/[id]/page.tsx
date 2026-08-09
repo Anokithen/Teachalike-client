@@ -20,7 +20,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Select } from '@/components/ui/Input';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { ApiErrorShape, Book, BookNarration, PronunciationCheck, ReadingSession, SessionFeedback, VoiceProfile } from '@/lib/types';
+import { ApiErrorShape, Book, BookNarration, PronunciationCheck, PronunciationComparison as PronunciationComparisonData, PronunciationTranscript, ReadingSession, SessionFeedback, VoiceProfile } from '@/lib/types';
 import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
 import { BookAttribution } from '@/components/books/BookAttribution';
 import { PronunciationComparison } from '@/components/reading/PronunciationComparison';
@@ -43,12 +43,15 @@ export default function ReadingSessionPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const microphoneButtonRef = useRef<HTMLButtonElement | null>(null);
   const recordingStartedAtRef = useRef(0);
+  const previewInFlightRef = useRef(false);
+  const finalizingRecordingRef = useRef(false);
   const [paragraphIndex, setParagraphIndex] = useState(0);
   const [transcript, setTranscript] = useState('');
   const [listening, setListening] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [checking, setChecking] = useState(false);
   const [pronunciationResult, setPronunciationResult] = useState<PronunciationCheck | null>(null);
+  const [interimComparison, setInterimComparison] = useState<PronunciationComparisonData | null>(null);
   const [pronunciationError, setPronunciationError] = useState<string | null>(null);
   const [pronunciationAttempts, setPronunciationAttempts] = useState<PronunciationAttempt[]>([]);
   const [voiceProfiles, setVoiceProfiles] = useState<VoiceProfile[]>([]);
@@ -82,6 +85,7 @@ export default function ReadingSessionPage() {
   }, [storyImages.length]);
 
   useEffect(() => () => {
+    finalizingRecordingRef.current = true;
     recorderRef.current?.stop();
     streamRef.current?.getTracks().forEach((track) => track.stop());
   }, []);
@@ -188,6 +192,8 @@ export default function ReadingSessionPage() {
   async function startListening() {
     setPronunciationError(null);
     setPronunciationResult(null);
+    setInterimComparison(null);
+    finalizingRecordingRef.current = false;
     try {
       if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) throw new Error('Microphone recording is not supported in this browser. Please use Chrome, Edge, or Safari over HTTPS or localhost.');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
@@ -196,32 +202,60 @@ export default function ReadingSessionPage() {
       const preferredType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '';
       const recorder = preferredType ? new MediaRecorder(stream, { mimeType: preferredType }) : new MediaRecorder(stream);
       recorderRef.current = recorder;
-      recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
+      const recordingExtension = (recorder.mimeType || '').includes('mp4') ? 'mp4' : (recorder.mimeType || '').includes('ogg') ? 'ogg' : 'webm';
+      const transcribeRecording = async (audio: Blob, interim: boolean) => {
+        if (!audio.size || (interim && previewInFlightRef.current)) return;
+        const recordingFile = new File([audio], `my-reading.${recordingExtension}`, { type: audio.type });
+        if (!isAllowedUploadFile(recordingFile, 'audio')) {
+          if (!interim) setPronunciationError(uploadFormatError('audio'));
+          return;
+        }
+        if (interim) previewInFlightRef.current = true;
+        try {
+          const form = new FormData();
+          form.append('audio', recordingFile);
+          form.append('paragraph_index', String(paragraphIndex));
+          if (interim) form.append('interim', 'true');
+          const response = await sessionsApi.transcribePronunciation(id, form);
+          const data = response.data as PronunciationTranscript;
+          if (interim && !finalizingRecordingRef.current) {
+            setTranscript(data.transcript || '');
+            setInterimComparison(data.comparison || null);
+          } else if (!interim) {
+            setTranscript(data.transcript || '');
+            setInterimComparison(data.comparison || null);
+            if (!data.transcript) setPronunciationError('I could not hear any words. Try again a little closer to the microphone.');
+          }
+        } catch (err) {
+          if (!interim) setPronunciationError((err as ApiErrorShape).message || 'We could not analyse that recording. Please try again.');
+        } finally {
+          if (interim) previewInFlightRef.current = false;
+        }
+      };
+      recorder.ondataavailable = (event) => {
+        if (!event.data.size) return;
+        chunks.push(event.data);
+        if (recorder.state === 'recording' && !finalizingRecordingRef.current) {
+          void transcribeRecording(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }), true);
+        }
+      };
       recorder.onstop = async () => {
+        finalizingRecordingRef.current = true;
         stream.getTracks().forEach((track) => track.stop());
         setListening(false);
         const audio = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
-        if (!audio.size) return;
+        if (!audio.size) {
+          setInterimComparison(null);
+          return;
+        }
         if (Date.now() - recordingStartedAtRef.current < 750) {
+          setInterimComparison(null);
           setPronunciationError('That recording was a little too short. Take a breath, then read the paragraph again.');
           return;
         }
         setTranscribing(true);
         try {
-          const form = new FormData();
-          const extension = (recorder.mimeType || '').includes('mp4') ? 'mp4' : (recorder.mimeType || '').includes('ogg') ? 'ogg' : 'webm';
-          const recordingFile = new File([audio], `my-reading.${extension}`, { type: audio.type });
-          if (!isAllowedUploadFile(recordingFile, 'audio')) {
-            setPronunciationError(uploadFormatError('audio'));
-            return;
-          }
-          form.append('audio', recordingFile);
-          const response = await sessionsApi.transcribePronunciation(id, form);
-          const spoken = response.data.transcript as string;
-          setTranscript(spoken || '');
-          if (!spoken) setPronunciationError('I could not hear any words. Try again a little closer to the microphone.');
-        } catch (err) {
-          setPronunciationError((err as ApiErrorShape).message || 'We could not analyse that recording. Please try again.');
+          await transcribeRecording(audio, false);
         } finally {
           setTranscribing(false);
         }
@@ -229,7 +263,7 @@ export default function ReadingSessionPage() {
       setTranscript('');
       setListening(true);
       recordingStartedAtRef.current = Date.now();
-      recorder.start();
+      recorder.start(4000);
     } catch (err) {
       setListening(false);
       const permissionDenied = err instanceof DOMException && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
@@ -237,7 +271,10 @@ export default function ReadingSessionPage() {
     }
   }
 
-  function stopListening() { recorderRef.current?.state === 'recording' && recorderRef.current.stop(); }
+  function stopListening() {
+    finalizingRecordingRef.current = true;
+    if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
+  }
 
   async function checkPronunciation() {
     if (!transcript.trim()) {
@@ -250,6 +287,7 @@ export default function ReadingSessionPage() {
     try {
       const res = await sessionsApi.checkPronunciation(id, { paragraph_index: paragraphIndex, transcript });
       setPronunciationResult(res.data);
+      setInterimComparison(null);
       load();
     } catch (err) {
       setPronunciationError((err as ApiErrorShape).message);
@@ -261,6 +299,7 @@ export default function ReadingSessionPage() {
   function retryParagraph() {
     setTranscript('');
     setPronunciationResult(null);
+    setInterimComparison(null);
     setPronunciationError(null);
     window.requestAnimationFrame(() => {
       microphoneButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -395,6 +434,7 @@ export default function ReadingSessionPage() {
                   setParagraphIndex(Number(e.target.value));
                   setTranscript('');
                   setPronunciationResult(null);
+                  setInterimComparison(null);
                 }}
                 disabled={session.is_complete}
               >
@@ -406,6 +446,7 @@ export default function ReadingSessionPage() {
                 paragraph={paragraphs[paragraphIndex]}
                 paragraphIndex={paragraphIndex}
                 result={pronunciationResult}
+                interimComparison={interimComparison}
                 isReading={listening || transcribing || checking}
               />
               <div className="flex flex-col items-center gap-3 py-2 text-center">

@@ -269,6 +269,11 @@ export interface PronunciationComparison {
   practice_words: PronunciationPracticeWord[];
 }
 
+export interface PronunciationTranscript {
+  transcript: string;
+  comparison?: PronunciationComparison;
+}
+
 export interface PronunciationAttempt {
   id: number;
   reading_session_id: number;

@@ -3,7 +3,7 @@
 import { memo, useEffect, useMemo, useRef } from 'react';
 import type { Ref } from 'react';
 import { Check, CircleAlert, Flag, Sparkles } from 'lucide-react';
-import type { PronunciationCheck, PronunciationComparisonToken } from '@/lib/types';
+import type { PronunciationCheck, PronunciationComparison, PronunciationComparisonToken } from '@/lib/types';
 
 type ReadingWordStatus = 'unread' | 'active' | 'correct' | 'incorrect' | 'skipped';
 
@@ -19,6 +19,7 @@ interface ReadingWordTrackerProps {
   paragraph: string;
   paragraphIndex: number;
   result: PronunciationCheck | null;
+  interimComparison: PronunciationComparison | null;
   isReading: boolean;
 }
 
@@ -40,22 +41,28 @@ function fallbackWords(paragraph: string, paragraphIndex: number): ReadingWord[]
   }));
 }
 
-function resultWords(result: PronunciationCheck, paragraphIndex: number): ReadingWord[] {
-  return result.comparison.tokens
+function comparisonWords(comparison: PronunciationComparison, paragraphIndex: number, interim: boolean): ReadingWord[] {
+  const expectedTokens = comparison.tokens
     .filter((token): token is PronunciationComparisonToken & { global_word_index: number; expected: string } => (
       token.global_word_index !== null
       && token.global_word_index !== undefined
       && token.expected !== null
     ))
-    .sort((left, right) => left.global_word_index - right.global_word_index)
+    .sort((left, right) => left.global_word_index - right.global_word_index);
+  const lastHeardIndex = interim
+    ? expectedTokens.reduce((last, token, index) => token.heard ? index : last, -1)
+    : expectedTokens.length - 1;
+  return expectedTokens
     .map((token, index, tokens) => ({
       id: `${paragraphIndex}-${token.global_word_index}`,
-      text: `${token.expected}${result.comparison.original_text.slice(
+      text: `${token.expected}${comparison.original_text.slice(
         token.character_end ?? 0,
-        tokens[index + 1]?.character_start ?? result.comparison.original_text.length,
+        tokens[index + 1]?.character_start ?? comparison.original_text.length,
       ).trim()}`,
       index: token.global_word_index,
-      status: token.status === 'correct'
+      status: interim && index > lastHeardIndex
+        ? (index === lastHeardIndex + 1 ? 'active' : 'unread')
+        : token.status === 'correct'
         ? 'correct'
         : token.status === 'deletion' ? 'skipped' : 'incorrect',
       heard: token.heard,
@@ -85,14 +92,17 @@ const ReadingWordChip = memo(function ReadingWordChip({ word, activeRef, isCurre
   );
 });
 
-export function ReadingWordTracker({ paragraph, paragraphIndex, result, isReading }: ReadingWordTrackerProps) {
+export function ReadingWordTracker({ paragraph, paragraphIndex, result, interimComparison, isReading }: ReadingWordTrackerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const activeWordRef = useRef<HTMLSpanElement | null>(null);
   const words = useMemo(() => {
-    const nextWords = result ? resultWords(result, paragraphIndex) : fallbackWords(paragraph, paragraphIndex);
-    if (isReading && nextWords.length > 0 && !result) nextWords[0] = { ...nextWords[0], status: 'active' };
+    const comparison = result?.comparison ?? interimComparison;
+    const nextWords = comparison
+      ? comparisonWords(comparison, paragraphIndex, !result)
+      : fallbackWords(paragraph, paragraphIndex);
+    if (isReading && nextWords.length > 0 && !comparison) nextWords[0] = { ...nextWords[0], status: 'active' };
     return nextWords;
-  }, [isReading, paragraph, paragraphIndex, result]);
+  }, [interimComparison, isReading, paragraph, paragraphIndex, result]);
   const completedCount = words.filter((word) => word.status === 'correct').length;
   const progress = words.length ? Math.round((completedCount / words.length) * 100) : 0;
   const currentWordIndex = words.findIndex((word) => word.status === 'active' || word.status === 'incorrect' || word.status === 'skipped');
@@ -114,7 +124,7 @@ export function ReadingWordTracker({ paragraph, paragraphIndex, result, isReadin
       <div className="reading-tracker__summary">
         <div>
           <p className="reading-tracker__count">{completedCount} / {words.length} words</p>
-          <p className="text-xs text-muted">Progress counts words the pronunciation check matched.</p>
+          <p className="text-xs text-muted">Progress follows words heard by the pronunciation system.</p>
         </div>
         <span className="reading-tracker__percent" aria-hidden="true">{progress}%</span>
       </div>
