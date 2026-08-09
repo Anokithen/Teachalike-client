@@ -18,6 +18,7 @@ const apiOrigin = (() => {
   }
   return parsed.origin;
 })();
+const websocketOrigin = apiOrigin.replace(/^http/, 'ws');
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -29,7 +30,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: https: ${apiOrigin}`,
   `media-src 'self' blob: https: ${apiOrigin}`,
-  `connect-src 'self' ${apiOrigin}`,
+  `connect-src 'self' ${apiOrigin} ${websocketOrigin}`,
 ].join('; ');
 
 const securityHeaders = [

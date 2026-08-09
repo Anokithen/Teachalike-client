@@ -282,7 +282,9 @@
   .reading-word__icon { width: .8rem; height: .8rem; flex: none; stroke-width: 3; }
   .reading-word__fill { position: absolute; inset: 0; z-index: 0; transform: scaleX(0); transform-origin: left; }
   .reading-word--active { border-color: #087E8B; color: #064E5B; box-shadow: 0 3px 10px rgb(8 126 139 / .16); }
-  .reading-word--active .reading-word__fill { background: rgb(142 229 243 / .55); animation: reading-word-fill 1.8s ease-in-out infinite; }
+  .reading-word--active .reading-word__fill { transform: scaleX(1); background: rgb(142 229 243 / .25); }
+  .reading-word--hearing { border-color: #087E8B; color: #064E5B; box-shadow: 0 3px 10px rgb(8 126 139 / .16); }
+  .reading-word--hearing .reading-word__fill { background: rgb(142 229 243 / .55); animation: reading-word-fill 1.2s ease-in-out infinite; }
   .reading-word--correct { border-color: rgb(var(--color-success) / .5); color: #14532D; }
   .reading-word--correct .reading-word__fill { transform: scaleX(1); background: rgb(var(--color-success) / .2); }
   .reading-word--incorrect { border-color: rgb(var(--color-warning)); color: #7C4A03; background: rgb(var(--color-warning) / .15); }
@@ -296,12 +298,14 @@
   .dark .reading-tracker__percent { color: #8EE5F3; }
   .dark .reading-word--active { border-color: #8EE5F3; color: #E6F3F6; }
   .dark .reading-word--active .reading-word__fill { background: rgb(8 126 139 / .5); }
+  .dark .reading-word--hearing { border-color: #8EE5F3; color: #E6F3F6; }
+  .dark .reading-word--hearing .reading-word__fill { background: rgb(8 126 139 / .5); }
   .dark .reading-word--correct { color: rgb(var(--color-success)); }
   .dark .reading-word--incorrect { color: rgb(var(--color-warning)); }
   .dark .reading-word--current { outline-color: rgb(142 229 243 / .45); }
 
   @media (prefers-reduced-motion: reduce) {
-    .reading-word--active .reading-word__fill { animation: none; transform: scaleX(1); }
+    .reading-word--hearing .reading-word__fill { animation: none; transform: scaleX(1); }
     .reading-tracker__bar > span { transition: none; }
     .reading-tracker__passage { scroll-behavior: auto; }
   }

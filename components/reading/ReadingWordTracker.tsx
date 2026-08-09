@@ -3,9 +3,9 @@
 import { memo, useEffect, useMemo, useRef } from 'react';
 import type { Ref } from 'react';
 import { Check, CircleAlert, Flag, Sparkles } from 'lucide-react';
-import type { PronunciationCheck, PronunciationComparison, PronunciationComparisonToken } from '@/lib/types';
+import type { LiveReadingProgress, PronunciationCheck, PronunciationComparison, PronunciationComparisonToken } from '@/lib/types';
 
-type ReadingWordStatus = 'unread' | 'active' | 'correct' | 'incorrect' | 'skipped';
+type ReadingWordStatus = 'unread' | 'active' | 'hearing' | 'correct' | 'incorrect' | 'skipped';
 
 interface ReadingWord {
   id: string;
@@ -19,13 +19,14 @@ interface ReadingWordTrackerProps {
   paragraph: string;
   paragraphIndex: number;
   result: PronunciationCheck | null;
-  interimComparison: PronunciationComparison | null;
+  liveProgress: LiveReadingProgress | null;
   isReading: boolean;
 }
 
 const statusLabels: Record<ReadingWordStatus, string> = {
   unread: 'Not read yet',
   active: 'Read this word now',
+  hearing: 'Listening to this word',
   correct: 'Read correctly',
   incorrect: 'Needs another try',
   skipped: 'Skipped',
@@ -41,7 +42,7 @@ function fallbackWords(paragraph: string, paragraphIndex: number): ReadingWord[]
   }));
 }
 
-function comparisonWords(comparison: PronunciationComparison, paragraphIndex: number, interim: boolean): ReadingWord[] {
+function comparisonWords(comparison: PronunciationComparison, paragraphIndex: number): ReadingWord[] {
   const expectedTokens = comparison.tokens
     .filter((token): token is PronunciationComparisonToken & { global_word_index: number; expected: string } => (
       token.global_word_index !== null
@@ -49,9 +50,6 @@ function comparisonWords(comparison: PronunciationComparison, paragraphIndex: nu
       && token.expected !== null
     ))
     .sort((left, right) => left.global_word_index - right.global_word_index);
-  const lastHeardIndex = interim
-    ? expectedTokens.reduce((last, token, index) => token.heard ? index : last, -1)
-    : expectedTokens.length - 1;
   return expectedTokens
     .map((token, index, tokens) => ({
       id: `${paragraphIndex}-${token.global_word_index}`,
@@ -60,9 +58,7 @@ function comparisonWords(comparison: PronunciationComparison, paragraphIndex: nu
         tokens[index + 1]?.character_start ?? comparison.original_text.length,
       ).trim()}`,
       index: token.global_word_index,
-      status: interim && index > lastHeardIndex
-        ? (index === lastHeardIndex + 1 ? 'active' : 'unread')
-        : token.status === 'correct'
+      status: token.status === 'correct'
         ? 'correct'
         : token.status === 'deletion' ? 'skipped' : 'incorrect',
       heard: token.heard,
@@ -92,20 +88,30 @@ const ReadingWordChip = memo(function ReadingWordChip({ word, activeRef, isCurre
   );
 });
 
-export function ReadingWordTracker({ paragraph, paragraphIndex, result, interimComparison, isReading }: ReadingWordTrackerProps) {
+export function ReadingWordTracker({ paragraph, paragraphIndex, result, liveProgress, isReading }: ReadingWordTrackerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const activeWordRef = useRef<HTMLSpanElement | null>(null);
   const words = useMemo(() => {
-    const comparison = result?.comparison ?? interimComparison;
-    const nextWords = comparison
-      ? comparisonWords(comparison, paragraphIndex, !result)
+    const nextWords = result
+      ? comparisonWords(result.comparison, paragraphIndex)
       : fallbackWords(paragraph, paragraphIndex);
-    if (isReading && nextWords.length > 0 && !comparison) nextWords[0] = { ...nextWords[0], status: 'active' };
+    if (!result && liveProgress) {
+      const confirmed = new Set(liveProgress.confirmed_indices);
+      nextWords.forEach((word, index) => {
+        if (confirmed.has(index)) word.status = 'correct';
+        else if (index === liveProgress.retry_index) word.status = 'incorrect';
+        else if (index === liveProgress.active_index) {
+          word.status = liveProgress.interim_transcript ? 'hearing' : 'active';
+        }
+      });
+    } else if (isReading && nextWords.length > 0 && !result) {
+      nextWords[0] = { ...nextWords[0], status: 'active' };
+    }
     return nextWords;
-  }, [interimComparison, isReading, paragraph, paragraphIndex, result]);
+  }, [isReading, liveProgress, paragraph, paragraphIndex, result]);
   const completedCount = words.filter((word) => word.status === 'correct').length;
   const progress = words.length ? Math.round((completedCount / words.length) * 100) : 0;
-  const currentWordIndex = words.findIndex((word) => word.status === 'active' || word.status === 'incorrect' || word.status === 'skipped');
+  const currentWordIndex = words.findIndex((word) => word.status === 'active' || word.status === 'hearing' || word.status === 'incorrect' || word.status === 'skipped');
 
   useEffect(() => {
     const container = containerRef.current;

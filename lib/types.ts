@@ -269,10 +269,22 @@ export interface PronunciationComparison {
   practice_words: PronunciationPracticeWord[];
 }
 
-export interface PronunciationTranscript {
+export interface LiveReadingProgress {
+  type: 'reading_progress';
+  sequence: number;
+  language: 'en' | 'ta';
+  final: boolean;
+  confidence?: number | null;
   transcript: string;
-  comparison?: PronunciationComparison;
+  interim_transcript: string;
+  confirmed_indices: number[];
+  active_index: number | null;
+  retry_index: number | null;
+  completed: boolean;
+  total_words: number;
 }
+
+export type LiveReadingConnectionState = 'idle' | 'connecting' | 'connected' | 'delayed' | 'closed';
 
 export interface PronunciationAttempt {
   id: number;

@@ -114,6 +114,8 @@ export const sessionsApi = {
   create: (payload: { book_id: number; voice_profile_id?: number }) =>
     api.post('/api/reading-sessions', payload),
   get: (id: number | string) => api.get(`/api/reading-sessions/${id}`),
+  createLiveReadingTicket: (id: number | string) =>
+    api.post(`/api/reading-sessions/${id}/live-reading-ticket`),
   update: (id: number | string, payload: Record<string, unknown>) =>
     api.patch(`/api/reading-sessions/${id}`, payload),
   checkPronunciation: (id: number | string, payload: { paragraph_index: number; transcript: string }) =>

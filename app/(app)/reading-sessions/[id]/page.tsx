@@ -20,13 +20,14 @@ import { Alert } from '@/components/ui/Alert';
 import { Select } from '@/components/ui/Input';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { ApiErrorShape, Book, BookNarration, PronunciationCheck, PronunciationComparison as PronunciationComparisonData, PronunciationTranscript, ReadingSession, SessionFeedback, VoiceProfile } from '@/lib/types';
+import { ApiErrorShape, Book, BookNarration, LiveReadingConnectionState, LiveReadingProgress, PronunciationCheck, ReadingSession, SessionFeedback, VoiceProfile } from '@/lib/types';
 import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
 import { BookAttribution } from '@/components/books/BookAttribution';
 import { PronunciationComparison } from '@/components/reading/PronunciationComparison';
 import type { PronunciationAttempt } from '@/lib/types';
 import { ThemedAudioPlayer } from '@/components/ui/ThemedAudioPlayer';
 import { ReadingWordTracker } from '@/components/reading/ReadingWordTracker';
+import { useLiveReadingTransport } from '@/hooks/useLiveReadingTransport';
 
 export default function ReadingSessionPage() {
   const { id } = useParams<{ id: string }>();
@@ -43,7 +44,6 @@ export default function ReadingSessionPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const microphoneButtonRef = useRef<HTMLButtonElement | null>(null);
   const recordingStartedAtRef = useRef(0);
-  const previewInFlightRef = useRef(false);
   const finalizingRecordingRef = useRef(false);
   const [paragraphIndex, setParagraphIndex] = useState(0);
   const [transcript, setTranscript] = useState('');
@@ -51,7 +51,9 @@ export default function ReadingSessionPage() {
   const [transcribing, setTranscribing] = useState(false);
   const [checking, setChecking] = useState(false);
   const [pronunciationResult, setPronunciationResult] = useState<PronunciationCheck | null>(null);
-  const [interimComparison, setInterimComparison] = useState<PronunciationComparisonData | null>(null);
+  const [liveProgress, setLiveProgress] = useState<LiveReadingProgress | null>(null);
+  const [liveConnection, setLiveConnection] = useState<LiveReadingConnectionState>('idle');
+  const [liveLanguage, setLiveLanguage] = useState<'en' | 'ta' | null>(null);
   const [pronunciationError, setPronunciationError] = useState<string | null>(null);
   const [pronunciationAttempts, setPronunciationAttempts] = useState<PronunciationAttempt[]>([]);
   const [voiceProfiles, setVoiceProfiles] = useState<VoiceProfile[]>([]);
@@ -62,6 +64,18 @@ export default function ReadingSessionPage() {
   const [narrationError, setNarrationError] = useState<string | null>(null);
   const [imageIndex, setImageIndex] = useState(0);
   const narrationAudio = useRef<HTMLAudioElement>(null);
+  const liveReading = useLiveReadingTransport({
+    onProgress: (progress) => {
+      setLiveProgress(progress);
+      if (progress.transcript) setTranscript(progress.transcript);
+      if (progress.completed) window.setTimeout(stopListening, 0);
+    },
+    onStateChange: (state, language) => {
+      setLiveConnection(state);
+      if (language) setLiveLanguage(language);
+    },
+    onError: (message) => setPronunciationError(message),
+  });
 
   const sentences = (book?.text_content || '')
     .split(/(?<=[.!?])\s+|\n+/)
@@ -192,70 +206,47 @@ export default function ReadingSessionPage() {
   async function startListening() {
     setPronunciationError(null);
     setPronunciationResult(null);
-    setInterimComparison(null);
+    setLiveProgress(null);
+    setLiveLanguage(null);
     finalizingRecordingRef.current = false;
     try {
       if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) throw new Error('Microphone recording is not supported in this browser. Please use Chrome, Edge, or Safari over HTTPS or localhost.');
+      const ticketResponse = await sessionsApi.createLiveReadingTicket(id);
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
       streamRef.current = stream;
       const chunks: BlobPart[] = [];
       const preferredType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '';
       const recorder = preferredType ? new MediaRecorder(stream, { mimeType: preferredType }) : new MediaRecorder(stream);
       recorderRef.current = recorder;
-      const recordingExtension = (recorder.mimeType || '').includes('mp4') ? 'mp4' : (recorder.mimeType || '').includes('ogg') ? 'ogg' : 'webm';
-      const transcribeRecording = async (audio: Blob, interim: boolean) => {
-        if (!audio.size || (interim && previewInFlightRef.current)) return;
-        const recordingFile = new File([audio], `my-reading.${recordingExtension}`, { type: audio.type });
-        if (!isAllowedUploadFile(recordingFile, 'audio')) {
-          if (!interim) setPronunciationError(uploadFormatError('audio'));
-          return;
-        }
-        if (interim) previewInFlightRef.current = true;
-        try {
-          const form = new FormData();
-          form.append('audio', recordingFile);
-          form.append('paragraph_index', String(paragraphIndex));
-          if (interim) form.append('interim', 'true');
-          const response = await sessionsApi.transcribePronunciation(id, form);
-          const data = response.data as PronunciationTranscript;
-          if (interim && !finalizingRecordingRef.current) {
-            setTranscript(data.transcript || '');
-            setInterimComparison(data.comparison || null);
-          } else if (!interim) {
-            setTranscript(data.transcript || '');
-            setInterimComparison(data.comparison || null);
-            if (!data.transcript) setPronunciationError('I could not hear any words. Try again a little closer to the microphone.');
-          }
-        } catch (err) {
-          if (!interim) setPronunciationError((err as ApiErrorShape).message || 'We could not analyse that recording. Please try again.');
-        } finally {
-          if (interim) previewInFlightRef.current = false;
-        }
-      };
-      recorder.ondataavailable = (event) => {
-        if (!event.data.size) return;
-        chunks.push(event.data);
-        if (recorder.state === 'recording' && !finalizingRecordingRef.current) {
-          void transcribeRecording(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }), true);
-        }
-      };
+      recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
       recorder.onstop = async () => {
         finalizingRecordingRef.current = true;
         stream.getTracks().forEach((track) => track.stop());
         setListening(false);
         const audio = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
         if (!audio.size) {
-          setInterimComparison(null);
           return;
         }
         if (Date.now() - recordingStartedAtRef.current < 750) {
-          setInterimComparison(null);
           setPronunciationError('That recording was a little too short. Take a breath, then read the paragraph again.');
           return;
         }
         setTranscribing(true);
         try {
-          await transcribeRecording(audio, false);
+          const extension = (recorder.mimeType || '').includes('mp4') ? 'mp4' : (recorder.mimeType || '').includes('ogg') ? 'ogg' : 'webm';
+          const recordingFile = new File([audio], `my-reading.${extension}`, { type: audio.type });
+          if (!isAllowedUploadFile(recordingFile, 'audio')) {
+            setPronunciationError(uploadFormatError('audio'));
+            return;
+          }
+          const form = new FormData();
+          form.append('audio', recordingFile);
+          const response = await sessionsApi.transcribePronunciation(id, form);
+          const spoken = String(response.data.transcript || '');
+          setTranscript(spoken);
+          if (!spoken) setPronunciationError('I could not hear any words. Try again a little closer to the microphone.');
+        } catch (err) {
+          setPronunciationError((err as ApiErrorShape).message || 'We could not analyse that recording. Please try again.');
         } finally {
           setTranscribing(false);
         }
@@ -263,7 +254,19 @@ export default function ReadingSessionPage() {
       setTranscript('');
       setListening(true);
       recordingStartedAtRef.current = Date.now();
-      recorder.start(4000);
+      try {
+        await liveReading.start({
+          stream,
+          ticket: String(ticketResponse.data.ticket),
+          sessionId: id,
+          paragraphIndex,
+        });
+      } catch (err) {
+        liveReading.stop();
+        setLiveConnection('delayed');
+        setPronunciationError(err instanceof Error ? `${err.message} You can keep reading; final recognition will still run.` : 'Live recognition is unavailable. You can keep reading.');
+      }
+      recorder.start();
     } catch (err) {
       setListening(false);
       const permissionDenied = err instanceof DOMException && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
@@ -273,6 +276,7 @@ export default function ReadingSessionPage() {
 
   function stopListening() {
     finalizingRecordingRef.current = true;
+    liveReading.stop();
     if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
   }
 
@@ -287,7 +291,7 @@ export default function ReadingSessionPage() {
     try {
       const res = await sessionsApi.checkPronunciation(id, { paragraph_index: paragraphIndex, transcript });
       setPronunciationResult(res.data);
-      setInterimComparison(null);
+      setLiveProgress(null);
       load();
     } catch (err) {
       setPronunciationError((err as ApiErrorShape).message);
@@ -299,7 +303,8 @@ export default function ReadingSessionPage() {
   function retryParagraph() {
     setTranscript('');
     setPronunciationResult(null);
-    setInterimComparison(null);
+    setLiveProgress(null);
+    setLiveConnection('idle');
     setPronunciationError(null);
     window.requestAnimationFrame(() => {
       microphoneButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -434,9 +439,10 @@ export default function ReadingSessionPage() {
                   setParagraphIndex(Number(e.target.value));
                   setTranscript('');
                   setPronunciationResult(null);
-                  setInterimComparison(null);
+                  setLiveProgress(null);
+                  setLiveConnection('idle');
                 }}
-                disabled={session.is_complete}
+                disabled={session.is_complete || listening || transcribing}
               >
                 {paragraphs.map((_, index) => (
                   <option key={index} value={index}>Paragraph {index + 1}</option>
@@ -446,7 +452,7 @@ export default function ReadingSessionPage() {
                 paragraph={paragraphs[paragraphIndex]}
                 paragraphIndex={paragraphIndex}
                 result={pronunciationResult}
-                interimComparison={interimComparison}
+                liveProgress={liveProgress}
                 isReading={listening || transcribing || checking}
               />
               <div className="flex flex-col items-center gap-3 py-2 text-center">
@@ -458,6 +464,15 @@ export default function ReadingSessionPage() {
                   )}
                 </button>
                 <p className="text-sm font-medium text-brand-900">{listening ? 'Listening… tap to finish' : transcribing ? 'Listening back to your words…' : 'Tap the microphone to read'}</p>
+                {listening && (
+                  <p className="text-xs text-muted" role="status">
+                    {liveConnection === 'connected'
+                      ? `Live word tracking connected${liveLanguage === 'ta' ? ' · Tamil' : liveLanguage === 'en' ? ' · English' : ''}`
+                      : liveConnection === 'delayed' || liveConnection === 'closed'
+                        ? 'Live tracking is reconnecting; your final recording is still safe.'
+                        : 'Connecting live word tracking…'}
+                  </p>
+                )}
                 <p className="text-xs text-muted">Each paragraph contains 6 sentences. Earn up to 50 leaderboard points based on your accuracy.</p>
               </div>
               <div className="flex flex-wrap justify-center gap-3">
