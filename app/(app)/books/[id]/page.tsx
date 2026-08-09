@@ -79,14 +79,14 @@ export default function BookDetailPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [bookRes, gamesRes, narrationsRes] = await Promise.all([
-          booksApi.get(id),
+        const bookRes = await booksApi.get(id);
+        setBook(bookRes.data.book);
+        const [gamesResult, narrationsResult] = await Promise.allSettled([
           booksApi.miniGames(id),
           bookNarrationsApi.list(id),
         ]);
-        setBook(bookRes.data.book);
-        setMiniGames(gamesRes.data.mini_games);
-        setNarrations(narrationsRes.data.book_narrations);
+        setMiniGames(gamesResult.status === 'fulfilled' ? gamesResult.value.data.mini_games : []);
+        setNarrations(narrationsResult.status === 'fulfilled' ? narrationsResult.value.data.book_narrations : []);
         try {
           const statusRes = await booksApi.miniGameGenerationStatus(id);
           setGenerationStatus(statusRes.data);
@@ -145,6 +145,10 @@ export default function BookDetailPage() {
 
   const selectedNarration = narrations.find((narration) => String(narration.voice_profile_id) === narrationVoiceId) || null;
   const storyImages = [book?.cover_image_url, ...(book?.image_urls || [])].filter(Boolean) as string[];
+
+  useEffect(() => {
+    setImageIndex((current) => Math.min(current, Math.max(0, storyImages.length - 1)));
+  }, [storyImages.length]);
 
   useEffect(() => {
     if (selectedNarration?.status !== 'processing') return;

@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { LibraryBig, Sparkles } from 'lucide-react';
 import { adminApi, aiApi } from '@/lib/endpoints';
@@ -15,6 +15,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 const AGE_GROUPS = ['3-5', '6-8', '9-11', '12+'];
 
 export default function NewBookPage() {
+  const requestKey = useRef(crypto.randomUUID());
   const [form, setForm] = useState({
     title: '', description: '', age_group: '3-5', reading_level: 'beginner' as ReadingLevel, text_content: '', content_url: '', cover_image_url: '', video_url: '',
   });
@@ -117,6 +118,7 @@ export default function NewBookPage() {
     setCreatedBookId(null);
     setLoading(true);
     let savedBookId: number | null = null;
+    let failedStage = 'media';
     try {
       setUploadStatus('Saving book and creating games…');
       const res = await adminApi.createBook({
@@ -124,12 +126,13 @@ export default function NewBookPage() {
         cover_image_url: coverFile ? '' : form.cover_image_url,
         image_urls: [],
         video_url: videoFile ? '' : form.video_url,
-      });
+      }, requestKey.current);
       const bookId = res.data.book.id as number;
       savedBookId = bookId;
       setCreatedBookId(bookId);
 
       if (coverFile) {
+        failedStage = 'cover image';
         setUploadStatus('Uploading cover image…');
         const media = new FormData();
         media.append('file', coverFile);
@@ -137,6 +140,7 @@ export default function NewBookPage() {
         await adminApi.uploadBookImage(bookId, media);
       }
       for (const [index, file] of illustrationFiles.entries()) {
+        failedStage = `illustration ${index + 1}`;
         setUploadStatus(`Uploading illustration ${index + 1} of ${illustrationFiles.length}…`);
         const media = new FormData();
         media.append('file', file);
@@ -146,6 +150,7 @@ export default function NewBookPage() {
       }
 
       if (videoFile) {
+        failedStage = 'video';
         setUploadStatus('Uploading video…');
         const video = new FormData();
         video.append('file', videoFile);
@@ -160,8 +165,8 @@ export default function NewBookPage() {
         // the failed video upload cannot accidentally create a duplicate book.
         resetBookForm();
         setError(
-          `Book #${savedBookId} was created, but its video could not be uploaded. ${
-            apiErr.message || 'You can add a video URL when editing the book.'
+          `Book #${savedBookId} was created, but its ${failedStage} could not be uploaded. ${
+            apiErr.message || 'Open the book editor to retry only the missing media.'
           }`,
         );
       } else {

@@ -5,7 +5,6 @@ import { Modal } from '@/components/ui/Modal';
 import { Input, Select } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
-import { useAuth } from '@/lib/auth-context';
 import { childrenApi } from '@/lib/endpoints';
 import { ApiErrorShape, Child, ChildGender } from '@/lib/types';
 import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
@@ -27,19 +26,17 @@ interface ChildForm {
   name: string;
   age: string;
   gender: ChildGender;
-  parent_id: string;
   child_pin: string;
 }
 
 export function ChildFormModal({ open, onClose, onCreated }: ChildFormModalProps) {
-  const { isTeacher } = useAuth();
-  const [form, setForm] = useState<ChildForm>({ name: '', age: '', gender: 'prefer_not_to_say', parent_id: '', child_pin: '' });
+  const [form, setForm] = useState<ChildForm>({ name: '', age: '', gender: 'prefer_not_to_say', child_pin: '' });
   const [error, setError] = useState<string | string[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
 
   const close = () => {
-    setForm({ name: '', age: '', gender: 'prefer_not_to_say', parent_id: '', child_pin: '' });
+    setForm({ name: '', age: '', gender: 'prefer_not_to_say', child_pin: '' });
     setProfileImageFile(null);
     setError(null);
     onClose();
@@ -55,7 +52,6 @@ export function ChildFormModal({ open, onClose, onCreated }: ChildFormModalProps
         age: Number(form.age),
         gender: form.gender,
       };
-      if (isTeacher) payload.parent_id = Number(form.parent_id);
       if (form.child_pin) payload.child_pin = form.child_pin;
       const res = await childrenApi.create(payload);
       let child = res.data.child as Child;
@@ -116,32 +112,18 @@ export function ChildFormModal({ open, onClose, onCreated }: ChildFormModalProps
           <input id="new-child-profile-image" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" onChange={onProfileImageChange} className="input" />
           <p className="mt-1 text-xs text-muted">JPG, PNG, or WebP only.</p>
         </div>
-        {!isTeacher && <Input
-          label="Child profile PIN (optional)"
+        <Input
+          label="Child profile PIN"
           type="password"
+          required
           inputMode="numeric"
           pattern="[0-9]{6}"
           minLength={6}
           maxLength={6}
           value={form.child_pin}
           onChange={(e) => setForm({ ...form, child_pin: e.target.value.replace(/\D/g, '').slice(0, 6) })}
-        />}
-        {!isTeacher && <p className="-mt-2 text-xs text-muted">Use exactly six digits. The child will enter it before opening their profile.</p>}
-        {isTeacher && (
-          <Input
-            label="Parent account ID"
-            type="number"
-            required
-            value={form.parent_id}
-            onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
-          />
-        )}
-        {isTeacher && (
-          <p className="-mt-2 text-xs text-muted">
-            Ask the parent for their account ID, or check with an admin. Parent lookup by name isn&apos;t
-            available yet.
-          </p>
-        )}
+        />
+        <p className="-mt-2 text-xs text-muted">Use exactly six digits. The child enters it before starting activities.</p>
         <Alert>{error}</Alert>
         <div className="flex flex-col-reverse justify-end gap-3 pt-1 sm:flex-row">
           <Button className="w-full sm:w-auto" variant="ghost" type="button" onClick={close}>

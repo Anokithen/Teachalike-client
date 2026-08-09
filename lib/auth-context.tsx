@@ -62,10 +62,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    const refreshToken = getRefreshToken();
     try {
-      await authApi.logout(getRefreshToken());
+      await authApi.logout(refreshToken);
     } catch {
-      // Clear local credentials even if the API is temporarily unavailable.
+      // An expired access token cannot authorize the normal logout request.
+      // Revoke the refresh credential directly before clearing local state.
+      if (refreshToken) {
+        try { await authApi.revokeRefresh(refreshToken); } catch { /* Offline logout still clears this device. */ }
+      }
     }
     clearTokens();
     setAccount(null);

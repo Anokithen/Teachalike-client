@@ -35,17 +35,20 @@ export function getNavItems({ isAdmin, isTeacher = false }: { isAdmin: boolean; 
   }
   const items: NavItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/children', label: 'Children', icon: Baby },
     { href: '/books', label: 'Books', icon: BookOpen },
     { href: '/voice-profiles', label: 'Voice profiles', icon: Mic2 },
     { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { href: '/account', label: 'My account', icon: UserCircle },
   ];
   if (isTeacher) {
+    const leaderboardIndex = items.findIndex((item) => item.href === '/leaderboard');
+    if (leaderboardIndex >= 0) items.splice(leaderboardIndex, 1);
     items.splice(1, 0,
       { href: '/teacher/books', label: 'My books', icon: LibraryBig },
       { href: '/teacher/books/create', label: 'Create book', icon: BookOpen },
     );
+  } else {
+    items.splice(1, 0, { href: '/children', label: 'Children', icon: Baby });
   }
   return items;
 }

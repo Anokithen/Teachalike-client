@@ -16,7 +16,9 @@ export function getAccessToken(): string | null {
 
 export function getRefreshToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return window.localStorage.getItem(REFRESH_TOKEN_KEY);
+  // Keep the long-lived credential scoped to this browser session. The API
+  // should move it to an HttpOnly cookie when frontend/backend share a site.
+  return window.sessionStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
 interface TokenPair {
@@ -27,13 +29,17 @@ interface TokenPair {
 export function setTokens({ access_token, refresh_token }: TokenPair): void {
   if (typeof window === 'undefined') return;
   if (access_token) window.localStorage.setItem(ACCESS_TOKEN_KEY, access_token);
-  if (refresh_token) window.localStorage.setItem(REFRESH_TOKEN_KEY, refresh_token);
+  if (refresh_token) {
+    window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+    window.sessionStorage.setItem(REFRESH_TOKEN_KEY, refresh_token);
+  }
 }
 
 export function clearTokens(): void {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(ACCESS_TOKEN_KEY);
   window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+  window.sessionStorage.removeItem(REFRESH_TOKEN_KEY);
   clearChildSessionToken();
 }
 
@@ -46,11 +52,11 @@ const api = axios.create({
 // Attach bearer token to every request.
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getAccessToken();
-  if (token) {
+  if (token && !config.headers.Authorization) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   const url = String(config.url || '');
-  if (url.includes('/api/parent/active-child') || url.includes('/api/reading-sessions') || (url.includes('/api/mini-games/') && url.includes('/results'))) {
+  if (url.includes('/api/parent/active-child') || url.includes('/api/reading-sessions') || (url.includes('/api/mini-games/') && url.includes('/results')) || (url.includes('/api/books/') && url.includes('/likes/'))) {
     const childToken = getChildSessionToken(); if (childToken) config.headers['X-Child-Session'] = childToken;
   }
   return config;

@@ -15,7 +15,7 @@ import { ApiErrorShape, Child } from '@/lib/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function ChildrenPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isParent } = useAuth();
   const [children, setChildren] = useState<Child[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -35,7 +35,7 @@ export default function ChildrenPage() {
 
   return (
     <div>
-      <PageHeader eyebrow="Growing readers" title="Children" icon={Baby} description={isAdmin ? 'Every child profile on the platform.' : 'Manage the children you read with.'} action={!isAdmin ? <Button onClick={() => setModalOpen(true)}>Add child</Button> : undefined} />
+      <PageHeader eyebrow="Growing readers" title="Children" icon={Baby} description={isAdmin ? 'Every child profile on the platform.' : 'Manage the children you read with.'} action={isParent ? <Button onClick={() => setModalOpen(true)}>Add child</Button> : undefined} />
 
       <div className="mt-6">
         {!children && !error && (
@@ -53,7 +53,7 @@ export default function ChildrenPage() {
                 : 'Add your first child profile to start assigning books.'
             }
             action={
-              !isAdmin && (
+              isParent && (
                 <Button onClick={() => setModalOpen(true)}>Add child</Button>
               )
             }

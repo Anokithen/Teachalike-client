@@ -19,6 +19,8 @@ interface EditForm {
   name: string;
   age: number | string;
   child_pin: string;
+  current_password: string;
+  remove_pin: boolean;
 }
 
 export default function ChildDetailPage() {
@@ -81,6 +83,8 @@ export default function ChildDetailPage() {
         name: childRes.data.child.name,
         age: childRes.data.child.age,
         child_pin: '',
+        current_password: '',
+        remove_pin: false,
       });
       setSessions(sessionsRes.data.reading_sessions);
       setGameResults(gameResultsRes.data.game_results);
@@ -101,14 +105,18 @@ export default function ChildDetailPage() {
     if (!form) return;
     setSaveError(null);
     setSaving(true);
+    let savedChild: Child | null = null;
     try {
-      const payload: { name: string; age: number; child_pin?: string } = {
+      const payload: { name: string; age: number; child_pin?: string; remove_pin?: boolean; current_password?: string } = {
         name: form.name,
         age: Number(form.age),
       };
       if (form.child_pin) payload.child_pin = form.child_pin;
+      if (form.remove_pin) payload.remove_pin = true;
+      if (form.child_pin || form.remove_pin) payload.current_password = form.current_password;
       const res = await childrenApi.update(id, payload);
       let updatedChild = res.data.child as Child;
+      savedChild = updatedChild;
       if (profileImageFile) {
         const image = new FormData();
         image.append('profile_image', profileImageFile);
@@ -121,7 +129,15 @@ export default function ChildDetailPage() {
       setEditing(false);
     } catch (err) {
       const apiErr = err as ApiErrorShape;
-      setSaveError(apiErr.fields?.length ? apiErr.fields : apiErr.message);
+      if (savedChild) {
+        setChild(savedChild);
+        setSaveError([
+          'The child details were saved, but the new picture was not uploaded.',
+          ...(apiErr.fields?.length ? apiErr.fields : [apiErr.message]),
+        ]);
+      } else {
+        setSaveError(apiErr.fields?.length ? apiErr.fields : apiErr.message);
+      }
     } finally {
       setSaving(false);
     }
@@ -272,8 +288,11 @@ export default function ChildDetailPage() {
               maxLength={6}
               value={form.child_pin}
               onChange={(e) => setForm({ ...form, child_pin: e.target.value.replace(/\D/g, '').slice(0, 6) })}
-              placeholder={child.has_pin ? 'Leave blank to keep current PIN' : 'Optional'}
+              placeholder={child.has_pin ? 'Leave blank to keep current PIN' : 'Set a PIN to enable activities'}
+              disabled={form.remove_pin}
             />
+            {child.has_pin && <label className="flex min-h-11 items-center gap-2 text-sm text-brand-900"><input type="checkbox" checked={form.remove_pin} onChange={(event) => setForm({ ...form, remove_pin: event.target.checked, child_pin: event.target.checked ? '' : form.child_pin })} />Remove the current PIN</label>}
+            {(form.child_pin || form.remove_pin) && <Input label="Current account password" type="password" required value={form.current_password} onChange={(event) => setForm({ ...form, current_password: event.target.value })} />}
             <div className="sm:col-span-2">
               <label htmlFor="child-profile-image" className="label">Child picture (optional)</label>
               <input ref={profileImageInput} id="child-profile-image" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" onChange={onProfileImageChange} className="input" />

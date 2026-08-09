@@ -59,6 +59,7 @@ export default function AccountPage() {
       return;
     }
     setSaving(true);
+    let imageSaved = false;
     try {
       const payload: {
         name: string;
@@ -68,20 +69,29 @@ export default function AccountPage() {
       } = { name: form.name, email: form.email };
       if (form.password) payload.password = form.password;
       if (sensitiveChange) payload.current_password = form.currentPassword;
-      await accountApi.update(payload);
       if (profileImageFile) {
         const image = new FormData();
         image.append('profile_image', profileImageFile);
         await accountApi.uploadProfileImage(image);
+        imageSaved = true;
         setProfileImageFile(null);
         if (profileImageInput.current) profileImageInput.current.value = '';
+      }
+      const response = await accountApi.update(payload);
+      if (response.data.reauthentication_required) {
+        clearTokens();
+        router.push('/login?passwordChanged=1');
+        return;
       }
       await refreshAccount();
       setForm((f) => ({ ...f, password: '', currentPassword: '' }));
       setSaved(true);
     } catch (err) {
       const apiErr = err as ApiErrorShape;
-      setSaveError(apiErr.fields?.length ? apiErr.fields : apiErr.message);
+      const detail = apiErr.fields?.length ? apiErr.fields : apiErr.message;
+      setSaveError(imageSaved
+        ? ['Your picture was saved, but the account details were not.', ...(Array.isArray(detail) ? detail : [detail])]
+        : detail);
     } finally {
       setSaving(false);
     }

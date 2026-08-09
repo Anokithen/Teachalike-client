@@ -108,7 +108,9 @@ export default function DashboardPage() {
             <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100 sm:text-base">
               {isAdmin
                 ? 'Keep the TeachAlike experience joyful, organised, and ready for every growing reader.'
-                : 'Turn a few minutes of reading into a bright little adventure for your family today.'}
+                : isTeacher
+                  ? 'Create thoughtful stories and keep your learning library ready for young readers.'
+                  : 'Turn a few minutes of reading into a bright little adventure for your family today.'}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -118,7 +120,7 @@ export default function DashboardPage() {
                 Create book
               </Link>
             )}
-            {!isAdmin && (
+            {!isAdmin && !isTeacher && (
               <Link href="/children" className="btn-home-outline gap-2 bg-white/10 transition hover:-translate-y-0.5 hover:bg-white/20">
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 Add child
@@ -136,6 +138,11 @@ export default function DashboardPage() {
 
       {isAdmin ? (
         <AdminDashboard readerList={children} books={books} voiceProfiles={voiceProfiles} leaderboard={leaderboard} />
+      ) : isTeacher ? (
+        <TeacherDashboard
+          books={(books || []).filter((book) => book.created_by?.account_id === account?.id)}
+          readyVoices={readyVoices}
+        />
       ) : (
         <ParentDashboard
           readerList={children}
@@ -152,6 +159,26 @@ export default function DashboardPage() {
       )}
     </div>
   );
+}
+
+function TeacherDashboard({ books, readyVoices }: { books: Book[]; readyVoices: number }) {
+  return <>
+    <div className="grid gap-3 sm:grid-cols-3">
+      <MetricCard icon={LibraryBig} label="My published books" value={books.length} detail="Stories in the library" tone="violet" />
+      <MetricCard icon={Mic2} label="Ready voices" value={readyVoices} detail="Available for narration" tone="rose" />
+      <MetricCard icon={BookOpen} label="Next step" value={books.length ? 'Keep creating' : 'First story'} detail="Build a joyful reading collection" tone="cyan" />
+    </div>
+    <Card>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-500">Teacher studio</p><h2 className="mt-1 text-xl font-bold text-brand-900">Your story collection</h2><p className="mt-2 text-sm text-muted">Create, review, and improve the books you publish for families.</p></div>
+        <div className="flex flex-wrap gap-2"><Link href="/teacher/books" className="btn-secondary">Manage books</Link><Link href="/teacher/books/create" className="btn-primary">Create a book</Link></div>
+      </div>
+    </Card>
+    <section className="grid gap-3 sm:grid-cols-3">
+      {books.slice(0, 3).map((book) => <Link key={book.id} href={`/teacher/books/${book.id}/edit`} className="card p-4 transition hover:-translate-y-1"><Badge tone="brand">{book.reading_level}</Badge><h3 className="mt-3 font-bold text-brand-900">{book.title}</h3><p className="mt-1 text-sm text-muted">{book.age_group}</p></Link>)}
+      {!books.length && <div className="sm:col-span-3"><EmptyState title="No teacher books yet" description="Create your first story to start building your library." action={<Link href="/teacher/books/create" className="btn-primary">Create first book</Link>} /></div>}
+    </section>
+  </>;
 }
 
 function ParentDashboard({

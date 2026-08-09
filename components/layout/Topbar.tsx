@@ -146,7 +146,32 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         </div>
       </div>
       </header>
-      <Modal open={Boolean(pendingChild)} onClose={()=>setPendingChild(null)} title={pendingChild?`Enter ${pendingChild.name}'s password`:''}><form onSubmit={async e=>{e.preventDefault();if(!pendingChild)return;if(!/^\d{6}$/.test(pin)){setPinError('Enter the 6-digit profile PIN.');return;}setVerifying(true);try{await activateChild(pendingChild.id,pin);setPendingChild(null);}catch(error){setPin('');setPinError((error as {message?:string}).message||'That child password was not correct. Please try again.');}finally{setVerifying(false);}}} className="space-y-4"><p className="text-sm text-muted">Enter the 6-digit profile PIN for this child.</p><Input label="Child password" type="password" inputMode="numeric" maxLength={6} value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,'').slice(0,6))} autoFocus/>{pinError&&<Alert>{pinError}</Alert>}<div className="flex justify-end gap-3"><Button type="button" variant="ghost" onClick={()=>setPendingChild(null)}>Cancel</Button><Button type="submit" loading={verifying}>Verify child</Button></div></form></Modal>
+      <Modal open={Boolean(pendingChild)} onClose={() => setPendingChild(null)} title={pendingChild ? `Open ${pendingChild.name}'s child mode` : ''}>
+        {pendingChild && !pendingChild.has_pin ? (
+          <div className="space-y-4">
+            <Alert>This child needs a six-digit PIN before activities can begin.</Alert>
+            <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
+              <Button type="button" variant="ghost" onClick={() => setPendingChild(null)}>Cancel</Button>
+              <Link href={`/children/${pendingChild.id}`} onClick={() => setPendingChild(null)} className="btn-primary">Set a PIN</Link>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={async (event) => {
+            event.preventDefault();
+            if (!pendingChild) return;
+            if (!/^\d{6}$/.test(pin)) { setPinError('Enter the 6-digit profile PIN.'); return; }
+            setVerifying(true);
+            try { await activateChild(pendingChild.id, pin); setPendingChild(null); }
+            catch (error) { setPin(''); setPinError((error as { message?: string }).message || 'That child PIN was not correct. Please try again.'); }
+            finally { setVerifying(false); }
+          }} className="space-y-4">
+            <p className="text-sm text-muted">Enter the six-digit profile PIN for this child.</p>
+            <Input label="Child PIN" type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={pin} onChange={(event) => setPin(event.target.value.replace(/\D/g, '').slice(0, 6))} autoFocus />
+            {pinError && <Alert>{pinError}</Alert>}
+            <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row"><Button type="button" variant="ghost" onClick={() => setPendingChild(null)}>Cancel</Button><Button type="submit" loading={verifying}>Open child mode</Button></div>
+          </form>
+        )}
+      </Modal>
     </>
   );
 }

@@ -71,6 +71,8 @@ export function BookEditModal({ book, open, onClose, onUpdated }: BookEditModalP
     event.preventDefault();
     setError(null);
     setSaving(true);
+    let metadataSaved = false;
+    let uploadedCount = 0;
     try {
       const imageUrls = form.image_urls
         .split(/\r?\n/)
@@ -98,6 +100,7 @@ export function BookEditModal({ book, open, onClose, onUpdated }: BookEditModalP
         video_url: form.video_url.trim(),
       });
       let updatedBook = response.data.book as Book;
+      metadataSaved = true;
       for (const [index, file] of illustrationFiles.entries()) {
         setUploadStatus(`Uploading illustration ${index + 1} of ${illustrationFiles.length}…`);
         const media = new FormData();
@@ -105,6 +108,7 @@ export function BookEditModal({ book, open, onClose, onUpdated }: BookEditModalP
         media.append('image_kind', 'picture');
         media.append('position', String(imageUrls.length + index + 1));
         await adminApi.uploadBookImage(book.id, media);
+        uploadedCount += 1;
       }
       if (illustrationFiles.length) {
         updatedBook = (await booksApi.get(book.id)).data.book as Book;
@@ -115,7 +119,14 @@ export function BookEditModal({ book, open, onClose, onUpdated }: BookEditModalP
       onClose();
     } catch (err) {
       const apiError = err as ApiErrorShape;
-      setError(apiError.fields?.length ? apiError.fields : apiError.message);
+      if (metadataSaved) {
+        setError([
+          `Book details were saved${uploadedCount ? ` and ${uploadedCount} illustration${uploadedCount === 1 ? '' : 's'} uploaded` : ''}, but the remaining media upload failed.`,
+          ...(apiError.fields?.length ? apiError.fields : [apiError.message]),
+        ]);
+      } else {
+        setError(apiError.fields?.length ? apiError.fields : apiError.message);
+      }
     } finally {
       setSaving(false);
       setUploadStatus(null);

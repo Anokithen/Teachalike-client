@@ -27,8 +27,8 @@ const contentSecurityPolicy = [
   "form-action 'self'",
   "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "media-src 'self' blob: https:",
+  `img-src 'self' data: blob: https: ${apiOrigin}`,
+  `media-src 'self' blob: https: ${apiOrigin}`,
   `connect-src 'self' ${apiOrigin}`,
 ].join('; ');
 

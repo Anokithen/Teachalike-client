@@ -75,6 +75,10 @@ export default function ReadingSessionPage() {
 
   useEffect(() => setImageIndex(0), [id]);
 
+  useEffect(() => {
+    setImageIndex((current) => Math.min(current, Math.max(0, storyImages.length - 1)));
+  }, [storyImages.length]);
+
   useEffect(() => () => {
     recorderRef.current?.stop();
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -108,24 +112,24 @@ export default function ReadingSessionPage() {
 
   async function load() {
     try {
-      const [sessionRes, feedbackRes, attemptsRes] = await Promise.all([
-        sessionsApi.get(id),
-        sessionsApi.listFeedback(id),
-        sessionsApi.listPronunciationAttempts(id),
-      ]);
+      const sessionRes = await sessionsApi.get(id);
       const loadedSession = sessionRes.data.reading_session as ReadingSession;
       setSession(loadedSession);
-      setFeedback(feedbackRes.data.feedback);
-      setPronunciationAttempts(attemptsRes.data.pronunciation_attempts);
       const bookRes = await booksApi.get(loadedSession.book_id);
       setBook(bookRes.data.book);
-      const [profileRes, narrationRes] = await Promise.all([
+      const [feedbackResult, attemptsResult, profileResult, narrationResult] = await Promise.allSettled([
+        sessionsApi.listFeedback(id),
+        sessionsApi.listPronunciationAttempts(id),
         voiceProfilesApi.list(),
         bookNarrationsApi.list(loadedSession.book_id),
       ]);
-      const readyProfiles = profileRes.data.voice_profiles.filter((profile: VoiceProfile) => profile.status === 'ready');
+      setFeedback(feedbackResult.status === 'fulfilled' ? feedbackResult.value.data.feedback : []);
+      setPronunciationAttempts(attemptsResult.status === 'fulfilled' ? attemptsResult.value.data.pronunciation_attempts : []);
+      const readyProfiles = profileResult.status === 'fulfilled'
+        ? profileResult.value.data.voice_profiles.filter((profile: VoiceProfile) => profile.status === 'ready')
+        : [];
       setVoiceProfiles(readyProfiles);
-      setNarrations(narrationRes.data.book_narrations);
+      setNarrations(narrationResult.status === 'fulfilled' ? narrationResult.value.data.book_narrations : []);
       setSelectedVoiceProfileId(
         String(loadedSession.voice_profile_id || readyProfiles[0]?.id || ''),
       );

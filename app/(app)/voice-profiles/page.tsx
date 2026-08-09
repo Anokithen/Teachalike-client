@@ -306,7 +306,7 @@ export default function VoiceProfilesPage() {
               <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto"><Badge tone={STATUS_TONE[profile.status] || 'warning'}>{profile.status}</Badge>
                 <Button className="flex-1 sm:flex-none" variant="ghost" loading={previewingId === profile.id} onClick={() => onPreview(profile)}><Play className="h-4 w-4" aria-hidden="true" />Play</Button>
                 <Button className="flex-1 sm:flex-none" variant="ghost" onClick={() => { setEditing(profile); setEditLabel(profile.label || ''); }}><Pencil className="h-4 w-4" aria-hidden="true" />Edit</Button>
-                <Button className="flex-1 sm:flex-none" variant="ghost" onClick={() => setPendingDelete(profile)}><Trash2 className="h-4 w-4" aria-hidden="true" />Delete</Button></div>
+                {!isAdmin && <Button className="flex-1 sm:flex-none" variant="ghost" onClick={() => setPendingDelete(profile)}><Trash2 className="h-4 w-4" aria-hidden="true" />Delete</Button>}</div>
             </div>
           </li>)}
         </ul>}
@@ -347,7 +347,7 @@ export default function VoiceProfilesPage() {
               <span className="max-w-full truncate text-xs font-medium text-brand-600 sm:max-w-28">{file?.name || 'No file chosen'}</span>
             </span>
           </label>
-          <p className="-mt-2 text-xs text-muted">MP3, WAV, WebM, OGG, or M4A/MP4, smaller than 25 MB. Upload only a voice you have permission to use.</p>
+          <p className="-mt-2 text-xs text-muted">MP3, WAV, WebM, OGG, or M4A/MP4, up to 50 MB. Upload only a voice you have permission to use.</p>
           <Alert>{createError}</Alert><Button type="submit" loading={creating} disabled={!file || isRecording} className="w-full">Accept &amp; create voice clone</Button>
         </form>
       </Card>

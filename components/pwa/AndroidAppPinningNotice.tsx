@@ -5,6 +5,8 @@ import { Check, Settings, ShieldCheck } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 
+const NOTICE_VERSION_KEY = 'teachalike_android_pinning_notice_v1';
+
 function isInstalledAndroidPwa() {
   if (!/Android/i.test(window.navigator.userAgent)) return false;
   return (
@@ -17,8 +19,16 @@ export function AndroidAppPinningNotice() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    setOpen(isInstalledAndroidPwa());
+    setOpen(
+      isInstalledAndroidPwa() &&
+      window.localStorage.getItem(NOTICE_VERSION_KEY) !== 'acknowledged',
+    );
   }, []);
+
+  function acknowledge() {
+    window.localStorage.setItem(NOTICE_VERSION_KEY, 'acknowledged');
+    setOpen(false);
+  }
 
   return (
     <Modal
@@ -27,7 +37,7 @@ export function AndroidAppPinningNotice() {
       dismissible={false}
       title="Protect child mode with App Pinning"
       footer={
-        <Button onClick={() => setOpen(false)} className="w-full sm:w-auto">
+        <Button onClick={acknowledge} className="w-full sm:w-auto">
           <Check className="h-4 w-4" aria-hidden="true" />
           OK, continue to TeachAlike
         </Button>

@@ -12,6 +12,10 @@ export const authApi = {
     api.post('/api/auth/logout', {
       ...(refreshToken ? { refresh_token: refreshToken } : {}),
     }),
+  revokeRefresh: (refreshToken: string) =>
+    api.post('/api/auth/logout', {}, {
+      headers: { Authorization: `Bearer ${refreshToken}` },
+    }),
 };
 
 // ---- AI model discovery ----
@@ -44,7 +48,7 @@ export const childrenApi = {
   get: (id: number | string) => api.get(`/api/children/${id}`),
   create: (payload: { name: string; age: number; gender: string; parent_id?: number; child_pin?: string }) =>
     api.post('/api/children', payload),
-  update: (id: number | string, payload: Partial<{ name: string; age: number; child_pin: string }>) =>
+  update: (id: number | string, payload: Partial<{ name: string; age: number; child_pin: string; remove_pin: boolean; current_password: string }>) =>
     api.patch(`/api/children/${id}`, payload),
   uploadProfileImage: (id: number | string, payload: FormData) =>
     api.post(`/api/children/${id}/profile-image`, payload, { headers: { 'Content-Type': 'multipart/form-data' } }),
@@ -196,7 +200,10 @@ export const adminApi = {
     cover_image_url?: string;
     image_urls?: string[];
     video_url?: string;
-  }) => api.post('/api/admin/books', payload),
+  }, idempotencyKey: string) => api.post('/api/admin/books', payload, {
+    headers: { 'Idempotency-Key': idempotencyKey },
+    timeout: 0,
+  }),
   updateBook: (id: number | string, payload: {
     title: string;
     description?: string;
@@ -207,12 +214,12 @@ export const adminApi = {
     cover_image_url?: string;
     image_urls?: string[];
     video_url?: string;
-  }) => api.patch(`/api/admin/books/${id}`, payload),
+  }) => api.patch(`/api/admin/books/${id}`, payload, { timeout: 0 }),
   deleteBook: (id: number | string) => api.delete(`/api/admin/books/${id}`),
   generateBookDraft: (payload: { age_group: string; reading_level: ReadingLevel; idea: string; model?: string }) =>
     api.post('/api/admin/book-draft', payload),
   uploadBookImage: (bookId: number | string, media: FormData) =>
-    api.post(`/api/admin/books/${bookId}/images`, media, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post(`/api/admin/books/${bookId}/images`, media, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 0 }),
   uploadBookVideo: (bookId: number | string, media: FormData) =>
-    api.post(`/api/admin/books/${bookId}/videos`, media, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post(`/api/admin/books/${bookId}/videos`, media, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 0 }),
 };
