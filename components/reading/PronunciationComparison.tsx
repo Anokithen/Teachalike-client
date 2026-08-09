@@ -74,10 +74,35 @@ export function PronunciationComparison({ result, onRetry, onReplayParagraph }: 
 
   useEffect(() => setSupportsSpeech('speechSynthesis' in window), []);
 
+  function graphemes(word: string) {
+    const Segmenter = (Intl as unknown as {
+      Segmenter?: new (locale?: string, options?: { granularity: 'grapheme' }) => {
+        segment: (value: string) => Iterable<{ segment: string }>;
+      };
+    }).Segmenter;
+    if (Segmenter) {
+      return Array.from(
+        new Segmenter(undefined, { granularity: 'grapheme' }).segment(word.normalize('NFC')),
+        (part) => part.segment,
+      );
+    }
+    return Array.from(word.normalize('NFC'));
+  }
+
   function speakWord(word: string) {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(word));
+    const language = /[\u0B80-\u0BFF]/u.test(word) ? 'ta-IN' : 'en-US';
+    graphemes(word).forEach((grapheme) => {
+      const letter = new SpeechSynthesisUtterance(grapheme);
+      letter.lang = language;
+      letter.rate = 0.68;
+      window.speechSynthesis.speak(letter);
+    });
+    const completeWord = new SpeechSynthesisUtterance(word);
+    completeWord.lang = language;
+    completeWord.rate = 0.82;
+    window.speechSynthesis.speak(completeWord);
   }
 
   function wordChip(token: PronunciationComparisonToken, label: string) {
@@ -202,7 +227,7 @@ export function PronunciationComparison({ result, onRetry, onReplayParagraph }: 
                 <p className="mt-2 text-xs font-bold text-brand-600">Sentence {word.sentence_number} · Word {word.word_number}</p>
                 <p className="mt-2 text-sm">Say it slowly, then read it with the nearby words.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {supportsSpeech && <Button type="button" variant="secondary" onClick={() => speakWord(word.expected)} aria-label={`Hear the word ${word.expected}`}><Volume2 className="h-4 w-4" aria-hidden="true" />Hear word</Button>}
+                  {supportsSpeech && <Button type="button" variant="secondary" onClick={() => speakWord(word.expected)} aria-label={`Spell, then hear the word ${word.expected}`}><Volume2 className="h-4 w-4" aria-hidden="true" />Hear word</Button>}
                   <Button type="button" onClick={onRetry}><RotateCcw className="h-4 w-4" aria-hidden="true" />Try again</Button>
                 </div>
               </article>
