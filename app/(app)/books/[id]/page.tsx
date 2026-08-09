@@ -36,6 +36,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ApiErrorShape, Book, BookEngagement, BookNarration, MiniGame, MiniGameGenerationStatusResponse, VoiceProfile } from '@/lib/types';
 import { useActiveChild } from '@/lib/active-child-context';
 import { BookAttribution } from '@/components/books/BookAttribution';
+import { ThemedAudioPlayer } from '@/components/ui/ThemedAudioPlayer';
 
 const GAME_DETAILS: Record<string, { icon: LucideIcon; goal: string; description: string }> = {
   word_puzzle: { icon: Puzzle, goal: 'Word builder', description: 'Put mixed-up letters in the right order to build book words.' },
@@ -355,7 +356,7 @@ export default function BookDetailPage() {
                 {!selectedNarration && <Button type="button" onClick={createNarration} loading={creatingNarration} disabled={!narrationVoiceId}><Volume2 className="h-4 w-4" aria-hidden="true" />Generate and listen</Button>}
                 {selectedNarration?.status === 'processing' && <div className="flex items-center gap-2 text-sm text-brand-700"><Spinner size={16} /> Generating narration… This can take a few minutes.</div>}
                 {selectedNarration?.status === 'failed' && <div className="space-y-2"><Alert>{selectedNarration.error_message || 'Narration generation failed.'}</Alert><Button type="button" onClick={createNarration} loading={creatingNarration}><RotateCcw className="h-4 w-4" aria-hidden="true" />Retry narration</Button></div>}
-                {selectedNarration?.status === 'ready' && <div className="space-y-3"><Button type="button" variant="ghost" onClick={loadNarrationAudio}><Play className="h-4 w-4" aria-hidden="true" />Listen to saved narration</Button>{narrationAudioUrl && <audio ref={narrationAudio} key={narrationAudioUrl} className="w-full" controls controlsList="nodownload" autoPlay preload="metadata" src={narrationAudioUrl} onContextMenu={(event) => event.preventDefault()}>Your browser cannot play this narration.</audio>}</div>}
+                {selectedNarration?.status === 'ready' && <div className="space-y-3"><Button type="button" variant="ghost" onClick={loadNarrationAudio}><Play className="h-4 w-4" aria-hidden="true" />Listen to saved narration</Button>{narrationAudioUrl && <ThemedAudioPlayer ref={narrationAudio} key={narrationAudioUrl} label="Story narration" autoPlay preload="metadata" src={narrationAudioUrl} />}</div>}
               </div>
             )}
             {narrationError && <div className="mt-3"><Alert>{narrationError}</Alert></div>}

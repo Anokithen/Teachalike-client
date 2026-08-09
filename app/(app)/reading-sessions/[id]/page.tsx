@@ -25,6 +25,7 @@ import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
 import { BookAttribution } from '@/components/books/BookAttribution';
 import { PronunciationComparison } from '@/components/reading/PronunciationComparison';
 import type { PronunciationAttempt } from '@/lib/types';
+import { ThemedAudioPlayer } from '@/components/ui/ThemedAudioPlayer';
 
 export default function ReadingSessionPage() {
   const { id } = useParams<{ id: string }>();
@@ -364,19 +365,14 @@ export default function ReadingSessionPage() {
                 <Alert>{selectedNarration.error_message || 'Narration generation failed. Try again.'}</Alert>
               )}
               {narrationAudioUrl && (
-                <audio
+                <ThemedAudioPlayer
                   ref={narrationAudio}
                   key={narrationAudioUrl}
-                  className="w-full"
-                  controls
-                  controlsList="nodownload"
+                  label="Familiar voice narration"
                   autoPlay
                   preload="metadata"
                   src={narrationAudioUrl}
-                  onContextMenu={(event) => event.preventDefault()}
-                >
-                  Your browser cannot play this narration.
-                </audio>
+                />
               )}
               {narrationError && <Alert>{narrationError}</Alert>}
             </div>
@@ -531,7 +527,9 @@ export default function ReadingSessionPage() {
                   </div>
                   <p className="text-sm text-brand-900">{f.feedback_text}</p>
                   {f.audio_url && (
-                    <audio controls controlsList="nodownload" src={f.audio_url} className="mt-2 w-full" onContextMenu={(event) => event.preventDefault()} />
+                    <div className="mt-3">
+                      <ThemedAudioPlayer compact label={`${f.feedback_type} audio feedback`} src={f.audio_url} />
+                    </div>
                   )}
                 </li>
               ))}

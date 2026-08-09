@@ -26,6 +26,7 @@ import { useAuth } from '@/lib/auth-context';
 import { ApiErrorShape, VoiceProfile, VoiceProfileStatus } from '@/lib/types';
 import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { ThemedAudioPlayer } from '@/components/ui/ThemedAudioPlayer';
 
 // Keep the browser-side guard aligned with MAX_VOICE_PROFILE_SIZE_MB.
 const MAX_BYTES = 50 * 1024 * 1024;
@@ -314,7 +315,7 @@ export default function VoiceProfilesPage() {
         {previewUrl && <div className="voice-playback-card mt-4 overflow-hidden rounded-2xl border border-brand-400/30 bg-gradient-to-r from-cyan-50 via-violet-50 to-amber-50 p-4 shadow-sm">
           <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-brand-600 to-violet-500 text-white shadow-md"><Music2 className="h-5 w-5" aria-hidden="true" /></span><div><p className="text-sm font-semibold text-brand-900">Your voice is ready to play</p><p className="text-xs text-muted">Use the controls below to pause, replay, or seek.</p></div></div>
           <PlaybackWave />
-          <audio ref={previewAudio} key={previewUrl} className="vibrant-audio-player w-full" controls controlsList="nodownload" autoPlay preload="metadata" src={previewUrl} onContextMenu={(event) => event.preventDefault()} onEnded={() => setPreviewUrl(null)} onError={() => setPreviewError('This recording could not be played. Please try again.')}>Your browser cannot play this recording.</audio>
+          <ThemedAudioPlayer ref={previewAudio} key={previewUrl} label="Voice profile preview" autoPlay preload="metadata" src={previewUrl} onEnded={() => setPreviewUrl(null)} onError={() => setPreviewError('This recording could not be played. Please try again.')} />
         </div>}
       </Card>
       {!isAdmin && <Card><h2 className="mb-4 text-sm font-semibold text-brand-900">Clone your voice</h2>
@@ -337,7 +338,7 @@ export default function VoiceProfilesPage() {
               {isRecording && <span className="text-sm font-semibold text-danger" aria-live="polite">Recording now…</span>}
               {creating && <span className="text-sm text-muted" aria-live="polite">Uploading and cloning your voice…</span>}
             </div>
-            {recordingUrl && <div className="voice-recording-preview mt-3 rounded-xl bg-white/70 p-3"><div className="mb-2 flex items-center gap-2 text-xs font-semibold text-violet-700"><Sparkles className="h-4 w-4" aria-hidden="true" />Review before uploading</div><PlaybackWave /><audio key={recordingUrl} className="vibrant-audio-player w-full" controls controlsList="nodownload" preload="metadata" src={recordingUrl} onContextMenu={(event) => event.preventDefault()} onEnded={() => setRecordingUrl(null)} onError={() => setCreateError('This recording could not be played. Please record it again.')}>Your browser cannot play this recording.</audio><Button type="button" variant="ghost" onClick={discardPendingRecording} className="mt-2 min-h-0 px-0 py-1 text-xs text-danger"><Trash2 className="h-4 w-4" aria-hidden="true" />Delete this recording</Button></div>}
+            {recordingUrl && <div className="voice-recording-preview mt-3 rounded-xl bg-white/70 p-3"><div className="mb-2 flex items-center gap-2 text-xs font-semibold text-violet-700"><Sparkles className="h-4 w-4" aria-hidden="true" />Review before uploading</div><PlaybackWave /><ThemedAudioPlayer key={recordingUrl} compact label="Recording review" preload="metadata" src={recordingUrl} onEnded={() => setRecordingUrl(null)} onError={() => setCreateError('This recording could not be played. Please record it again.')} /><Button type="button" variant="ghost" onClick={discardPendingRecording} className="mt-2 min-h-0 px-0 py-1 text-xs text-danger"><Trash2 className="h-4 w-4" aria-hidden="true" />Delete this recording</Button></div>}
           </div>
           <label className="block">
             <span className="text-sm font-semibold text-brand-900">Or upload an existing recording</span>
