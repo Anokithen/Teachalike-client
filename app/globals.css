@@ -269,6 +269,43 @@
   .comparison-celebration { position: absolute; right: 1rem; top: 1rem; animation: comparison-celebrate .8s ease-out both; }
   @keyframes comparison-celebrate { 0% { opacity: 0; transform: scale(.4) rotate(-30deg); } 70% { opacity: 1; transform: scale(1.2) rotate(10deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
 
+  .reading-tracker { border: 1px solid rgb(var(--color-border)); border-radius: 1rem; background: rgb(var(--color-bg) / .55); padding: 1rem; }
+  .reading-tracker__summary { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+  .reading-tracker__count { color: rgb(var(--color-muted)); font-size: .875rem; font-weight: 800; }
+  .reading-tracker__percent { color: #087E8B; font-size: .875rem; font-weight: 900; }
+  .reading-tracker__bar { height: .6rem; margin-top: .65rem; overflow: hidden; border-radius: 999px; background: rgb(var(--color-border)); }
+  .reading-tracker__bar > span { display: block; height: 100%; border-radius: inherit; background: rgb(var(--color-success)); transition: width .35s ease; }
+  .reading-tracker__passage { display: flex; max-height: 15rem; flex-wrap: wrap; align-content: flex-start; gap: .45rem .35rem; margin-top: 1rem; overflow-y: auto; scroll-padding: 2rem; border-radius: .75rem; padding: .35rem; font-size: 1.125rem; line-height: 1.8; outline: none; }
+  .reading-tracker__passage:focus-visible { box-shadow: 0 0 0 3px rgb(8 126 139 / .3); }
+  .reading-word { position: relative; display: inline-flex; min-height: 2.35rem; align-items: center; gap: .2rem; overflow: hidden; border: 2px solid transparent; border-radius: .65rem; padding: .05rem .36rem; color: rgb(var(--color-muted)); font-weight: 750; isolation: isolate; }
+  .reading-word__text, .reading-word__icon { position: relative; z-index: 1; }
+  .reading-word__icon { width: .8rem; height: .8rem; flex: none; stroke-width: 3; }
+  .reading-word__fill { position: absolute; inset: 0; z-index: 0; transform: scaleX(0); transform-origin: left; }
+  .reading-word--active { border-color: #087E8B; color: #064E5B; box-shadow: 0 3px 10px rgb(8 126 139 / .16); }
+  .reading-word--active .reading-word__fill { background: rgb(142 229 243 / .55); animation: reading-word-fill 1.8s ease-in-out infinite; }
+  .reading-word--correct { border-color: rgb(var(--color-success) / .5); color: #14532D; }
+  .reading-word--correct .reading-word__fill { transform: scaleX(1); background: rgb(var(--color-success) / .2); }
+  .reading-word--incorrect { border-color: rgb(var(--color-warning)); color: #7C4A03; background: rgb(var(--color-warning) / .15); }
+  .reading-word--skipped { border-style: dashed; border-color: rgb(var(--color-muted) / .75); color: rgb(var(--color-muted)); background: rgb(var(--color-border) / .45); text-decoration: underline dotted; text-underline-offset: .25rem; }
+  .reading-word--current { outline: 3px solid rgb(8 126 139 / .35); outline-offset: 2px; }
+  .reading-word--current::after { position: absolute; right: .15rem; bottom: -.05rem; left: .15rem; z-index: 2; height: 3px; border-radius: 999px; background: currentColor; content: ''; }
+  .reading-tracker__legend { display: flex; flex-wrap: wrap; gap: .45rem 1rem; margin-top: .8rem; color: rgb(var(--color-muted)); font-size: .7rem; font-weight: 750; }
+  .reading-tracker__legend span { display: inline-flex; align-items: center; gap: .25rem; }
+  @keyframes reading-word-fill { 0% { transform: scaleX(.08); } 65%, 100% { transform: scaleX(1); } }
+
+  .dark .reading-tracker__percent { color: #8EE5F3; }
+  .dark .reading-word--active { border-color: #8EE5F3; color: #E6F3F6; }
+  .dark .reading-word--active .reading-word__fill { background: rgb(8 126 139 / .5); }
+  .dark .reading-word--correct { color: rgb(var(--color-success)); }
+  .dark .reading-word--incorrect { color: rgb(var(--color-warning)); }
+  .dark .reading-word--current { outline-color: rgb(142 229 243 / .45); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reading-word--active .reading-word__fill { animation: none; transform: scaleX(1); }
+    .reading-tracker__bar > span { transition: none; }
+    .reading-tracker__passage { scroll-behavior: auto; }
+  }
+
   .recording-wave {
     @apply flex h-10 items-center justify-center gap-1;
   }

@@ -26,6 +26,7 @@ import { BookAttribution } from '@/components/books/BookAttribution';
 import { PronunciationComparison } from '@/components/reading/PronunciationComparison';
 import type { PronunciationAttempt } from '@/lib/types';
 import { ThemedAudioPlayer } from '@/components/ui/ThemedAudioPlayer';
+import { ReadingWordTracker } from '@/components/reading/ReadingWordTracker';
 
 export default function ReadingSessionPage() {
   const { id } = useParams<{ id: string }>();
@@ -401,9 +402,12 @@ export default function ReadingSessionPage() {
                   <option key={index} value={index}>Paragraph {index + 1}</option>
                 ))}
               </Select>
-              <p className="rounded-xl border border-brand-400/30 bg-brand-400/10 p-4 text-base leading-relaxed text-brand-900">
-                {paragraphs[paragraphIndex]}
-              </p>
+              <ReadingWordTracker
+                paragraph={paragraphs[paragraphIndex]}
+                paragraphIndex={paragraphIndex}
+                result={pronunciationResult}
+                isReading={listening || transcribing || checking}
+              />
               <div className="flex flex-col items-center gap-3 py-2 text-center">
                 <button ref={microphoneButtonRef} type="button" aria-label={listening ? 'Stop recording' : 'Start recording'} onClick={listening ? stopListening : startListening} disabled={session.is_complete || transcribing} className={`mic-orb ${listening ? 'is-listening' : ''} disabled:opacity-50`}>
                   {listening ? (
