@@ -359,7 +359,28 @@ export interface ApiErrorShape {
   status?: number;
   errorCode?: string;
   rejectionReason?: string;
+  feature?: string;
+  current?: number;
+  limit?: number | null;
+  currentPlan?: string;
+  recommendedPlan?: string;
 }
+
+export type PricingMode = 'PRICING_DISABLED' | 'PRICING_GLOBAL' | 'PRICING_SELECTIVE';
+export interface FeatureEntitlement { enabled: boolean; limit: number | null; unlimited: boolean; value_type: string; description?: string | null; }
+export interface EffectiveEntitlements {
+  pricing_mode: PricingMode; pricing_applies: boolean; effective_plan: string; billing_plan: string | null;
+  subscription_status: string; source: string; features: Record<string, FeatureEntitlement>; can_upgrade: boolean;
+  cancel_at_period_end?: boolean; current_period_end?: string | null;
+}
+export interface PricingPlan {
+  id: number; name: string; slug: string; price_minor: number; currency: string; billing_interval: string;
+  description?: string | null; stripe_product_id?: string | null; stripe_price_id?: string | null; active: boolean;
+  public_visible: boolean; recommended: boolean; sort_order: number; cta_text?: string | null;
+  features: Record<string, FeatureEntitlement>;
+}
+export interface BillingSubscription { id: number; plan: PricingPlan; provider: string; status: string; current_period_start?: string | null; current_period_end?: string | null; cancel_at_period_end: boolean; created_at: string; }
+export interface BillingPayment { id: number; amount_minor: number; currency: string; status: string; invoice_url?: string | null; paid_at?: string | null; created_at: string; }
 
 export interface BookEngagement {
   book_id: number;

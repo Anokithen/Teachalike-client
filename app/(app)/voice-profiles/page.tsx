@@ -27,6 +27,7 @@ import { ApiErrorShape, VoiceProfile, VoiceProfileStatus } from '@/lib/types';
 import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { ThemedAudioPlayer } from '@/components/ui/ThemedAudioPlayer';
+import { UpgradePrompt } from '@/components/ui/UpgradePrompt';
 
 // Keep the browser-side guard aligned with MAX_VOICE_PROFILE_SIZE_MB.
 const MAX_BYTES = 50 * 1024 * 1024;
@@ -110,6 +111,7 @@ export default function VoiceProfilesPage() {
   const [file, setFile] = useState<File | null>(null);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | string[] | null>(null);
+  const [upgradeError, setUpgradeError] = useState<ApiErrorShape | null>(null);
   const [pendingDelete, setPendingDelete] = useState<VoiceProfile | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState<VoiceProfile | null>(null);
@@ -165,7 +167,7 @@ export default function VoiceProfilesPage() {
   }
 
   async function uploadRecording(recording: File) {
-    setCreateError(null); setCreating(true);
+    setCreateError(null); setUpgradeError(null); setCreating(true);
     try {
       if (!isAllowedUploadFile(recording, 'audio')) {
         setCreateError(uploadFormatError('audio'));
@@ -180,6 +182,7 @@ export default function VoiceProfilesPage() {
       if (fileInput.current) fileInput.current.value = '';
     } catch (err) {
       const apiError = err as ApiErrorShape;
+      if (apiError.errorCode === 'PLAN_LIMIT_REACHED' || apiError.errorCode === 'FEATURE_NOT_AVAILABLE') setUpgradeError(apiError);
       setCreateError(apiError.fields?.length ? apiError.fields : apiError.message);
     } finally { setCreating(false); }
   }
@@ -349,7 +352,7 @@ export default function VoiceProfilesPage() {
             </span>
           </label>
           <p className="-mt-2 text-xs text-muted">MP3, WAV, WebM, OGG, or M4A/MP4, up to 50 MB. Upload only a voice you have permission to use.</p>
-          <Alert>{createError}</Alert><Button type="submit" loading={creating} disabled={!file || isRecording} className="w-full">Accept &amp; create voice clone</Button>
+          {upgradeError ? <UpgradePrompt message={upgradeError.message} recommendedPlan={upgradeError.recommendedPlan} /> : <Alert>{createError}</Alert>}<Button type="submit" loading={creating} disabled={!file || isRecording} className="w-full">Accept &amp; create voice clone</Button>
         </form>
       </Card>
       }

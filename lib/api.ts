@@ -68,19 +68,26 @@ interface BackendErrorData {
   message?: string;
   error_code?: string;
   rejection_reason?: string;
+  feature?: string;
+  current?: number;
+  limit?: number | null;
+  currentPlan?: string;
+  recommendedPlan?: string;
 }
 
 function normalizeBackendErrorData(
   data: BackendErrorData | undefined,
   status?: number,
 ): ApiErrorShape | null {
+  const upgrade = data ? { feature: data.feature, current: data.current, limit: data.limit,
+    currentPlan: data.currentPlan, recommendedPlan: data.recommendedPlan } : {};
   if (data?.errors && Array.isArray(data.errors)) {
-    return { message: data.errors.join(' '), fields: data.errors, status, errorCode: data.error_code, rejectionReason: data.rejection_reason };
+    return { message: data.errors.join(' '), fields: data.errors, status, errorCode: data.error_code, rejectionReason: data.rejection_reason, ...upgrade };
   }
   if (data?.error) {
     const fields = [data.error];
     if (data.rejection_reason) fields.push(`Reason: ${data.rejection_reason}`);
-    return { message: fields.join(' '), fields, status, errorCode: data.error_code, rejectionReason: data.rejection_reason };
+    return { message: data.message || fields.join(' '), fields, status, errorCode: data.error_code, rejectionReason: data.rejection_reason, ...upgrade };
   }
   if (data?.message) {
     return { message: data.message, fields: [data.message], status, errorCode: data.error_code, rejectionReason: data.rejection_reason };

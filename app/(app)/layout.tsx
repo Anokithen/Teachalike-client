@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
 import { ActiveChildProvider } from '@/lib/active-child-context';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
+import { EntitlementProvider } from '@/lib/entitlement-context';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -14,6 +15,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <AuthGuard>
       <ActiveChildProvider>
+        <EntitlementProvider>
         <div className="app-shell flex min-h-[100dvh] min-w-0">
           <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           <div className="flex min-w-0 flex-1 flex-col app-content-surface lg:ml-[308px]">
@@ -25,7 +27,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </main>
             <MobileBottomNav />
           </div>
-        </div>
+          </div>
+        </EntitlementProvider>
       </ActiveChildProvider>
     </AuthGuard>
   );

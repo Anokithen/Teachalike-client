@@ -7,6 +7,8 @@ import {
   LibraryBig,
   Mic2,
   Trophy,
+  CreditCard,
+  BadgeDollarSign,
   UserCircle,
   UsersRound,
   type LucideIcon,
@@ -26,6 +28,7 @@ export function getNavItems({ isAdmin, isTeacher = false }: { isAdmin: boolean; 
       { href: '/admin/teachers', label: 'Teachers', icon: GraduationCap },
       { href: '/admin/books/new', label: 'Add book', icon: LibraryBig },
       { href: '/admin/book-views', label: 'Book views', icon: BarChart3 },
+      { href: '/admin/pricing', label: 'Pricing & subscriptions', icon: BadgeDollarSign },
       { href: '/voice-profiles', label: 'Voice recordings', icon: Mic2 },
       { href: '/children', label: 'Children', icon: Baby },
       { href: '/books', label: 'Books', icon: BookOpen },
@@ -49,6 +52,10 @@ export function getNavItems({ isAdmin, isTeacher = false }: { isAdmin: boolean; 
     );
   } else {
     items.splice(1, 0, { href: '/children', label: 'Children', icon: Baby });
+    items.push(
+      { href: '/pricing', label: 'Plans', icon: BadgeDollarSign },
+      { href: '/billing', label: 'Billing', icon: CreditCard },
+    );
   }
   return items;
 }

@@ -8,6 +8,7 @@ import { Alert } from '@/components/ui/Alert';
 import { childrenApi } from '@/lib/endpoints';
 import { ApiErrorShape, Child, ChildGender } from '@/lib/types';
 import { isAllowedUploadFile, uploadFormatError } from '@/lib/file-validation';
+import { UpgradePrompt } from '@/components/ui/UpgradePrompt';
 
 const GENDER_OPTIONS: { value: ChildGender; label: string }[] = [
   { value: 'female', label: 'Girl' },
@@ -32,6 +33,7 @@ interface ChildForm {
 export function ChildFormModal({ open, onClose, onCreated }: ChildFormModalProps) {
   const [form, setForm] = useState<ChildForm>({ name: '', age: '', gender: 'prefer_not_to_say', child_pin: '' });
   const [error, setError] = useState<string | string[] | null>(null);
+  const [upgrade, setUpgrade] = useState<ApiErrorShape | null>(null);
   const [loading, setLoading] = useState(false);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
 
@@ -39,12 +41,14 @@ export function ChildFormModal({ open, onClose, onCreated }: ChildFormModalProps
     setForm({ name: '', age: '', gender: 'prefer_not_to_say', child_pin: '' });
     setProfileImageFile(null);
     setError(null);
+    setUpgrade(null);
     onClose();
   };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setUpgrade(null);
     setLoading(true);
     try {
       const payload: { name: string; age: number; gender: ChildGender; parent_id?: number; child_pin?: string } = {
@@ -65,6 +69,7 @@ export function ChildFormModal({ open, onClose, onCreated }: ChildFormModalProps
       close();
     } catch (err) {
       const apiErr = err as ApiErrorShape;
+      if (apiErr.errorCode === 'PLAN_LIMIT_REACHED' || apiErr.errorCode === 'FEATURE_NOT_AVAILABLE') setUpgrade(apiErr);
       setError(apiErr.fields?.length ? apiErr.fields : apiErr.message);
     } finally {
       setLoading(false);
@@ -124,7 +129,7 @@ export function ChildFormModal({ open, onClose, onCreated }: ChildFormModalProps
           onChange={(e) => setForm({ ...form, child_pin: e.target.value.replace(/\D/g, '').slice(0, 6) })}
         />
         <p className="-mt-2 text-xs text-muted">Use exactly six digits. The child enters it before starting activities.</p>
-        <Alert>{error}</Alert>
+        {upgrade ? <UpgradePrompt message={upgrade.message} recommendedPlan={upgrade.recommendedPlan} /> : <Alert>{error}</Alert>}
         <div className="flex flex-col-reverse justify-end gap-3 pt-1 sm:flex-row">
           <Button className="w-full sm:w-auto" variant="ghost" type="button" onClick={close}>
             Cancel

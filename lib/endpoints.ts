@@ -225,3 +225,20 @@ export const adminApi = {
   uploadBookVideo: (bookId: number | string, media: FormData) =>
     api.post(`/api/admin/books/${bookId}/videos`, media, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 0 }),
 };
+
+export const pricingApi = {
+  plans: () => api.get('/api/pricing/plans'),
+  me: () => api.get('/api/billing/me'),
+  checkout: (plan: string) => api.post('/api/billing/checkout', { plan }),
+  subscriptionAction: (action: 'cancel' | 'resume') => api.post(`/api/billing/subscription/${action}`, {}),
+  portal: () => api.post('/api/billing/portal', {}),
+};
+
+export const adminPricingApi = {
+  overview: () => api.get('/api/admin/pricing'),
+  setMode: (pricing_mode: string, reason?: string) => api.patch('/api/admin/pricing/mode', { pricing_mode, reason }),
+  updatePlan: (id: number, payload: object) => api.patch(`/api/admin/pricing/plans/${id}`, payload),
+  users: (params: { search?: string; page?: number; per_page?: number } = {}) => api.get('/api/admin/pricing/users', { params }),
+  updateOverride: (id: number, payload: Record<string, unknown>) => api.patch(`/api/admin/pricing/users/${id}/override`, payload),
+  records: () => api.get('/api/admin/pricing/records'),
+};
