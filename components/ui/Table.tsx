@@ -5,13 +5,14 @@ interface TableProps {
   children?: ReactNode;
   mobileChildren?: ReactNode;
   label?: string;
+  layout?: 'fixed' | 'auto';
 }
 
-export function Table({ columns, children, mobileChildren, label = 'Data table' }: TableProps) {
+export function Table({ columns, children, mobileChildren, label = 'Data table', layout = 'fixed' }: TableProps) {
   return (
     <div className="neumorphic-card min-w-0">
-      <div className="hidden min-w-0 md:block">
-        <table className="w-full table-fixed text-left text-sm">
+      <div className="hidden min-w-0 overflow-x-auto md:block">
+        <table className={`w-full text-left text-sm ${layout === 'auto' ? 'table-auto' : 'table-fixed'}`}>
           <caption className="sr-only">{label}</caption>
         <thead>
           <tr className="border-b border-border bg-bg/60">

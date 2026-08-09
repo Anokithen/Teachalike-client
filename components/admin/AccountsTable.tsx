@@ -95,7 +95,7 @@ export function AccountsTable({
         {actionError && <Alert>{actionError}</Alert>}
         {accounts && accounts.length === 0 && <EmptyState title={`No ${label}s yet`} />}
         {accounts && accounts.length > 0 && (
-          <Table label={`${label} accounts`} columns={['Name', 'Email', 'Children', 'Status', 'Actions']} mobileChildren={accounts.map((a) => {
+          <Table layout="auto" label={`${label} accounts`} columns={['Name', 'Email', 'Children', 'Status', 'Actions']} mobileChildren={accounts.map((a) => {
             const isSelf = a.id === me?.id;
             return (
               <article key={`mobile-${a.id}`} className="min-w-0 rounded-2xl border border-border bg-bg/35 p-4">
@@ -126,10 +126,11 @@ export function AccountsTable({
                       {a.is_banned ? 'Banned' : 'Active'}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end gap-2">
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <div className="flex min-w-max flex-nowrap justify-end gap-2">
                       <Button
                         variant="ghost"
+                        className="shrink-0 whitespace-nowrap"
                         disabled={isSelf}
                         title={isSelf ? "You can't ban your own account" : undefined}
                         onClick={() => setPendingBan(a)}
@@ -138,7 +139,7 @@ export function AccountsTable({
                       </Button>
                       <Button
                         variant="ghost"
-                        className="text-danger"
+                        className="shrink-0 whitespace-nowrap text-danger"
                         disabled={isSelf}
                         title={isSelf ? "You can't delete your own account" : undefined}
                         onClick={() => setPendingDelete(a)}
