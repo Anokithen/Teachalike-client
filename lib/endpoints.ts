@@ -42,6 +42,11 @@ export const accountApi = {
     }),
 };
 
+export const userFeedbackApi = {
+  create: (payload: { category: string; subject: string; message: string }) =>
+    api.post('/api/feedback', payload),
+};
+
 // ---- Children ----
 export const childrenApi = {
   list: () => api.get('/api/children'),
@@ -170,6 +175,8 @@ export const syncApi = {
 
 // ---- Admin ----
 export const adminApi = {
+  listFeedback: (params: { category?: string; page?: number } = {}) =>
+    api.get('/api/admin/feedback', { params }),
   listParents: () => api.get('/api/admin/parents'),
   createParent: (payload: { name: string; email: string; password: string }) =>
     api.post('/api/admin/parents', payload),

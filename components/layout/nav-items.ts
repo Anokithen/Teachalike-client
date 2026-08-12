@@ -11,6 +11,7 @@ import {
   BadgeDollarSign,
   UserCircle,
   UsersRound,
+  MessageSquareText,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -28,6 +29,7 @@ export function getNavItems({ isAdmin, isTeacher = false }: { isAdmin: boolean; 
       { href: '/admin/teachers', label: 'Teachers', icon: GraduationCap },
       { href: '/admin/books/new', label: 'Add book', icon: LibraryBig },
       { href: '/admin/book-views', label: 'Book views', icon: BarChart3 },
+      { href: '/admin/feedback', label: 'User feedback', icon: MessageSquareText },
       { href: '/admin/pricing', label: 'Pricing & subscriptions', icon: BadgeDollarSign },
       { href: '/voice-profiles', label: 'Voice recordings', icon: Mic2 },
       { href: '/children', label: 'Children', icon: Baby },
@@ -42,6 +44,7 @@ export function getNavItems({ isAdmin, isTeacher = false }: { isAdmin: boolean; 
     { href: '/voice-profiles', label: 'Voice profiles', icon: Mic2 },
     { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { href: '/account', label: 'My account', icon: UserCircle },
+    { href: '/feedback', label: 'Send feedback', icon: MessageSquareText },
   ];
   if (isTeacher) {
     const leaderboardIndex = items.findIndex((item) => item.href === '/leaderboard');
