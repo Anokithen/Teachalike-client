@@ -369,7 +369,7 @@ export default function BookDetailPage() {
           )}
         </Card>
 
-        <Card>
+        <Card className="lg:self-start">
           <h2 className="mb-4 text-sm font-semibold text-brand-900">Start a reading session</h2>
           <form onSubmit={onStartSession} className="space-y-4">
             <p className="rounded-xl bg-brand-50 p-3 text-sm font-bold text-brand-800">{activeChild ? `Reading as ${activeChild.name}` : 'Choose a child from the header before starting this activity.'}</p>
