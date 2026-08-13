@@ -129,19 +129,6 @@ export function Topbar({ onMenuClick }: TopbarProps) {
       <div className="hidden lg:block" aria-hidden="true" />
 
       <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className="soft-inset hidden h-11 w-11 shrink-0 place-items-center rounded-2xl text-lg transition hover:bg-white active:scale-90 min-[460px]:grid"
-          aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-          title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {darkMode ? (
-            <Sun className="h-5 w-5" aria-hidden="true" />
-          ) : (
-            <Moon className="h-5 w-5" aria-hidden="true" />
-          )}
-        </button>
         {account?.role === 'parent' && (
           <div className="relative min-w-0">
             <button
@@ -215,6 +202,28 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 <UserRound className="h-4 w-4" aria-hidden="true" />
                 My account
               </Link>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-brand-900 transition-colors hover:bg-bg"
+                role="switch"
+                aria-checked={darkMode}
+              >
+                {darkMode ? (
+                  <Moon className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <Sun className="h-4 w-4" aria-hidden="true" />
+                )}
+                <span className="flex-1">Dark mode</span>
+                <span
+                  className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${darkMode ? 'bg-brand-600' : 'bg-border'}`}
+                  aria-hidden="true"
+                >
+                  <span
+                    className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${darkMode ? 'translate-x-[1.125rem]' : 'translate-x-0.5'}`}
+                  />
+                </span>
+              </button>
               <button
                 type="button"
                 onClick={requestExit}
