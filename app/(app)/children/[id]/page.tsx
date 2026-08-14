@@ -44,6 +44,12 @@ export default function ChildDetailPage() {
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  const [resettingPin, setResettingPin] = useState(false);
+  const [accountPassword, setAccountPassword] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmNewPin, setConfirmNewPin] = useState('');
+  const [resetPinError, setResetPinError] = useState<string | string[] | null>(null);
+  const [savingNewPin, setSavingNewPin] = useState(false);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const profileImageInput = useRef<HTMLInputElement>(null);
 
@@ -190,6 +196,49 @@ export default function ChildDetailPage() {
     }
   }
 
+  function closePinReset() {
+    setResettingPin(false);
+    setAccountPassword('');
+    setNewPin('');
+    setConfirmNewPin('');
+    setResetPinError(null);
+  }
+
+  async function resetChildPin(e: FormEvent) {
+    e.preventDefault();
+    setResetPinError(null);
+    if (!accountPassword) {
+      setResetPinError('Enter your account password.');
+      return;
+    }
+    if (!/^\d{6}$/.test(newPin)) {
+      setResetPinError('The new profile PIN must contain exactly six digits.');
+      return;
+    }
+    if (newPin !== confirmNewPin) {
+      setResetPinError('The new PINs do not match.');
+      return;
+    }
+
+    setSavingNewPin(true);
+    try {
+      await childrenApi.update(id, {
+        child_pin: newPin,
+        current_password: accountPassword,
+      });
+      await childrenApi.verifyPin(id, newPin);
+      closePinReset();
+      setPin('');
+      setRequiresPin(false);
+      await load();
+    } catch (err) {
+      const apiErr = err as ApiErrorShape;
+      setResetPinError(apiErr.fields?.length ? apiErr.fields : apiErr.message);
+    } finally {
+      setSavingNewPin(false);
+    }
+  }
+
   async function onDelete() {
     setDeleting(true);
     try {
@@ -207,12 +256,25 @@ export default function ChildDetailPage() {
     return <div className="mx-auto max-w-md pt-10">
       <Card>
         <h1 className="text-center text-2xl font-semibold text-brand-900">{profileName}&apos;s profile</h1>
-        <p className="mt-2 text-center text-sm text-muted">Enter the six-digit PIN to open this profile.</p>
-        <form className="mt-6 space-y-4" onSubmit={unlockProfile}>
-          <Input label="Profile PIN" type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))} />
-          <Alert>{pinError}</Alert>
-          <Button type="submit" className="w-full" loading={unlocking}>Open profile</Button>
-        </form>
+        {resettingPin ? <>
+          <p className="mt-2 text-center text-sm text-muted">Confirm your parent account password, then choose a new six-digit PIN.</p>
+          <form className="mt-6 space-y-4" onSubmit={resetChildPin}>
+            <Input label="Account password" type="password" autoComplete="current-password" required value={accountPassword} onChange={(e) => setAccountPassword(e.target.value)} />
+            <Input label="New profile PIN" type="password" inputMode="numeric" autoComplete="new-password" minLength={6} maxLength={6} required value={newPin} onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))} />
+            <Input label="Confirm new profile PIN" type="password" inputMode="numeric" autoComplete="new-password" minLength={6} maxLength={6} required value={confirmNewPin} onChange={(e) => setConfirmNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))} />
+            <Alert>{resetPinError}</Alert>
+            <Button type="submit" className="w-full" loading={savingNewPin}>Reset PIN and open profile</Button>
+            <Button type="button" variant="ghost" className="w-full" disabled={savingNewPin} onClick={closePinReset}>Back to PIN entry</Button>
+          </form>
+        </> : <>
+          <p className="mt-2 text-center text-sm text-muted">Enter the six-digit PIN to open this profile.</p>
+          <form className="mt-6 space-y-4" onSubmit={unlockProfile}>
+            <Input label="Profile PIN" type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))} />
+            <Alert>{pinError}</Alert>
+            <Button type="submit" className="w-full" loading={unlocking}>Open profile</Button>
+            <Button type="button" variant="ghost" className="w-full" onClick={() => { setPinError(null); setResettingPin(true); }}>Forgot child PIN?</Button>
+          </form>
+        </>}
       </Card>
     </div>;
   }
