@@ -70,6 +70,11 @@ export default function LoginPage() {
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
+            <div className="-mt-2 text-right">
+              <Link href="/forgot-password" className="text-sm font-medium text-brand-600 hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <Alert>{error}</Alert>
             <Button type="submit" loading={loading} className="w-full">
               Log in

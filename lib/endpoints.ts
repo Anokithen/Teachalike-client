@@ -8,6 +8,10 @@ export const authApi = {
       ? { headers: { 'Content-Type': 'multipart/form-data' } }
       : undefined),
   login: (payload: { email: string; password: string }) => api.post('/api/auth/login', payload),
+  forgotPassword: (email: string) => api.post('/api/auth/forgot-password', { email }),
+  validateResetToken: (token: string) => api.post('/api/auth/validate-reset-token', { token }),
+  resetPassword: (token: string, password: string) =>
+    api.post('/api/auth/reset-password', { token, password }),
   logout: (refreshToken?: string | null) =>
     api.post('/api/auth/logout', {
       ...(refreshToken ? { refresh_token: refreshToken } : {}),
